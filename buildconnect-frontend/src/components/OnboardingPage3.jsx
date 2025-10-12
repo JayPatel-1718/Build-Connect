@@ -1,49 +1,47 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // 👈 Import useNavigate
 
-const OnboardingPage2 = () => {
-  const navigate = useNavigate();
-  const [selectedServices, setSelectedServices] = useState([]);
+const OnboardingPage3 = () => {
+  const navigate = useNavigate(); // 👈 Initialize navigate
 
-  const toggleService = (service) => {
-    if (selectedServices.includes(service)) {
-      setSelectedServices(selectedServices.filter(s => s !== service));
-    } else {
-      setSelectedServices([...selectedServices, service]);
-    }
+  // State to track selected project type
+  const [selectedProject, setSelectedProject] = useState('');
+
+  // Toggle selection
+  const toggleProject = (project) => {
+    setSelectedProject(project);
   };
 
-  const services = [
-    "Interior Design Services",
-    "Electrical Services",
-    "Plumbing Services",
-    "Painting & Decorating",
-    "Painting & Decorating", // as shown in your image
-    "Others"
+  // List of project types
+  const projects = [
+    "Home renovation",
+    "New construction",
+    "Small repairs",
+    "Consultation"
   ];
 
   return (
     <Container>
       <Card>
-        <Title>What brings you here?</Title>
-        <Subtitle>"What are you looking for today?"</Subtitle>
+        <Title>What’s your project type?</Title>
+        <Subtitle>Hello User!</Subtitle>
 
-        <ServiceGrid>
-          {services.map((service, index) => (
-            <ServiceButton
+        <ProjectGrid>
+          {projects.map((project, index) => (
+            <ProjectButton
               key={index}
-              onClick={() => toggleService(service)}
-              isSelected={selectedServices.includes(service)}
+              onClick={() => toggleProject(project)}
+              isSelected={selectedProject === project}
             >
-              {service}
-            </ServiceButton>
+              {project}
+            </ProjectButton>
           ))}
-        </ServiceGrid>
+        </ProjectGrid>
 
-        <NextButton onClick={() => navigate('/onboarding3')}>
-          Next Step →
-        </NextButton>
+        <StartButton onClick={() => navigate('/homepage')}>
+          Get Started
+        </StartButton>
       </Card>
     </Container>
   );
@@ -58,7 +56,6 @@ const Container = styled.div`
   min-height: 100vh;
   background-color: #f9f9f9;
   padding: 20px;
-  padding-bottom: 80px; /* 👈 Prevent overlap with fixed footer */
 `;
 
 const Card = styled.div`
@@ -82,17 +79,16 @@ const Subtitle = styled.p`
   font-size: 14px;
   color: #666;
   margin: 0 0 24px 0;
-  font-style: italic;
 `;
 
-const ServiceGrid = styled.div`
+const ProjectGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 24px;
 `;
 
-const ServiceButton = styled.button`
+const ProjectButton = styled.button`
   padding: 12px 16px;
   border: none;
   border-radius: 8px;
@@ -101,6 +97,7 @@ const ServiceButton = styled.button`
   cursor: pointer;
   transition: all 0.2s;
 
+  /* Selected state */
   background: ${(props) => (props.isSelected ? '#000' : '#5DADE2')};
   color: white;
 
@@ -109,7 +106,7 @@ const ServiceButton = styled.button`
   }
 `;
 
-const NextButton = styled.button`
+const StartButton = styled.button`
   background: #000;
   color: white;
   border: none;
@@ -126,4 +123,4 @@ const NextButton = styled.button`
   }
 `;
 
-export default OnboardingPage2;
+export default OnboardingPage3;
