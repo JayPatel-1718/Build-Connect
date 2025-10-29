@@ -1,60 +1,99 @@
+// src/components/ClientDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../firebase'; // 👈 Import Firebase auth
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot 
+} from 'firebase/firestore';
+import { auth, db } from '../firebase';
+import { useNavigate } from 'react-router-dom'; // ✅ Added
 
 // ✅ IMAGES — Place these in public/ folder
-const avatar1 = "/11.png";           // Community avatars
+const avatar1 = "/11.png";
 const avatar2 = "/12.png";
 const avatar3 = "/13.png";
-const avatarKabir = "/11.png";        // Project user avatars
+const avatarKabir = "/11.png";
 const avatarRahul = "/15.png";
 const avatarJohn = "/13.png";
-const avatarProgress1 = "/11.png";    // Progress card images
+const avatarProgress1 = "/11.png";
 const avatarProgress2 = "/15.png";
 
-const HomePage = () => {
+const ClientDashboard = () => {
+  const navigate = useNavigate(); // ✅ Added
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setUser] = useState(null); // 👈 Track logged-in user
+  const [user, setUser] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [progressItems, setProgressItems] = useState([]);
 
-  // ✅ Check if user is logged in when component mounts
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        console.log('User is logged in:', currentUser);
-        setUser(currentUser); // 👈 Set user data
-      } else {
-        console.log('No user is logged in');
-        // Optionally redirect to login page
-        // navigate('/'); // Uncomment if using useNavigate
-      }
+    const authUnsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
     });
 
-    // Cleanup subscription
-    return () => unsubscribe();
-  }, []);
+    let projectsUnsub = () => {};
+    let progressUnsub = () => {};
 
-  // ✅ Sign out function
+    if (user) {
+      projectsUnsub = onSnapshot(
+        query(collection(db, 'projects'), where('clientId', '==', user.uid)),
+        (snapshot) => {
+          const projList = [];
+          snapshot.forEach(doc => projList.push({ id: doc.id, ...doc.data() }));
+          setProjects(projList);
+        }
+      );
+
+      progressUnsub = onSnapshot(
+        query(collection(db, 'progress'), where('clientId', '==', user.uid)),
+        (snapshot) => {
+          const progList = [];
+          snapshot.forEach(doc => progList.push({ id: doc.id, ...doc.data() }));
+          setProgressItems(progList);
+        }
+      );
+    }
+
+    return () => {
+      authUnsub();
+      projectsUnsub();
+      progressUnsub();
+    };
+  }, [user]);
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      console.log('User signed out');
-      // Optionally redirect to login page
-      // navigate('/');
+      navigate('/login');
     } catch (error) {
       console.error('Sign out error:', error);
     }
   };
 
-  // ✅ Get user display name (from Google or email)
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
-  const displayEmail = user?.email || 'user@example.com';
-  const displayAvatar = user?.photoURL || avatar1; // Use Google avatar or fallback
+  if (!user) {
+    return <LoadingScreen>Please log in...</LoadingScreen>;
+  }
+
+  const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+  const displayEmail = user.email || 'user@example.com';
+  const displayAvatar = user.photoURL || avatar1;
+
+  const projectList = projects.length > 0 ? projects : [
+    { id: 1, title: "Renovation & Remodelling", user: "Kabir Sharma", avatar: avatarKabir },
+    { id: 2, title: "Interior Design Services", user: "Rahul Mehta", avatar: avatarRahul },
+    { id: 3, title: "Construction Services", user: "John Doe", avatar: avatarJohn },
+  ];
+
+  const progressList = progressItems.length > 0 ? progressItems : [
+    { id: 1, title: "Renovation & Remodelling", cost: "$1,25,000", percent: 80, avatar: avatarProgress1 },
+    { id: 2, title: "Bathroom Renovation", cost: "$1,000", percent: 45, avatar: avatarProgress2 },
+  ];
 
   return (
     <Container>
       <Header>
-        {/* LEFT SIDE: Logo + Search + Filters */}
         <LeftSection>
           <LogoSection>
             <LogoIcon>
@@ -69,13 +108,10 @@ const HomePage = () => {
               <small>by PixelFusion</small>
             </LogoText>
           </LogoSection>
-
           <SearchBar placeholder="Type something here....." />
-
           <FilterButton>Filters</FilterButton>
         </LeftSection>
 
-        {/* RIGHT SIDE: Messages + Notifications + Profile */}
         <RightSection>
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -97,7 +133,6 @@ const HomePage = () => {
             <RedDot />
           </IconCircle>
 
-          {/* 👇 UPDATED: Show real user data */}
           <UserDropdown onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
             <UserAvatar src={displayAvatar} alt="User" />
             <div>
@@ -118,39 +153,27 @@ const HomePage = () => {
         </RightSection>
       </Header>
 
-      {/* MAIN CONTENT */}
       <MainContent>
-        {/* THE COMMUNITY CARD */}
-         {/* THE COMMUNITY CARD */}
-<CommunityCard>
-  <CommunityHeader>
-    <CommunityContent>
-      <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-            <ExploreButton>Explore Now</ExploreButton>
+        <CommunityCard>
+          <CommunityHeader>
+            <CommunityContent>
+              <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
+              {/* ✅ UPDATED: Navigate to Community Page */}
+              <ExploreButton onClick={() => navigate('/community')}>
+                Explore Now
+              </ExploreButton>
+            </CommunityContent>
+            <CommunityAvatars>
+              <Avatar><AvatarImg src={avatar1} alt="Avatar1" /></Avatar>
+              <Avatar><AvatarImg src={avatar2} alt="Avatar2" /></Avatar>
+              <Avatar><AvatarImg src={avatar3} alt="Avatar3" /></Avatar>
+            </CommunityAvatars>
+          </CommunityHeader>
+        </CommunityCard>
 
-    </CommunityContent>
-    <CommunityAvatars>
-      <Avatar>
-        <AvatarImg src={avatar1} alt="Avatar1" />
-      </Avatar>
-      <Avatar>
-        <AvatarImg src={avatar2} alt="Avatar2" />
-      </Avatar>
-      <Avatar>
-        <AvatarImg src={avatar3} alt="Avatar3" />
-      </Avatar>
-    </CommunityAvatars>
-  </CommunityHeader>
-</CommunityCard>
-
-        {/* FEED CARD */}
         <FeedCard>
           <FeedIcon>
-            <img 
-              src="/image.png" 
-              alt="Event" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-            />
+            <img src="/image.png" alt="Event" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </FeedIcon>
           <FeedBody>
             <FeedTitle>World of Concrete India 2025</FeedTitle>
@@ -162,102 +185,46 @@ const HomePage = () => {
         </FeedCard>
       </MainContent>
 
-      {/* RECOMMENDED PROJECTS SECTION */}
       <SectionTitle>Recommend Projects</SectionTitle>
-
       <ProjectsGrid>
-        {/* Project 1 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarKabir} alt="Kabir Sharma" />
-              <UserInfo>
-                <UserName>Kabir Sharma</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image.png" alt="Project" />
-          <CategoryLabel>Renovation & Remodelling</CategoryLabel>
-        </ProjectCard>
-
-        {/* Project 2 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarRahul} alt="Rahul Mehta" />
-              <UserInfo>
-                <UserName>Rahul Mehta</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image-1.png" alt="Project" />
-          <CategoryLabel>Interior Design Services</CategoryLabel>
-        </ProjectCard>
-
-        {/* Project 3 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarJohn} alt="John Doe" />
-              <UserInfo>
-                <UserName>John Doe</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image-2.png" alt="Project" />
-          <CategoryLabel>Construction Services</CategoryLabel>
-        </ProjectCard>
+        {projectList.map((proj) => (
+          <ProjectCard key={proj.id}>
+            <ProjectHeader>
+              <UserSection>
+                <UserAvatar src={proj.avatar} alt={proj.user} />
+                <UserInfo>
+                  <UserName>{proj.user}</UserName>
+                  <Status>🟢 Ready to work</Status>
+                </UserInfo>
+              </UserSection>
+              <ChatIcon>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </ChatIcon>
+            </ProjectHeader>
+            <ProjectImage src="/image.png" alt="Project" />
+            <CategoryLabel>{proj.title}</CategoryLabel>
+          </ProjectCard>
+        ))}
       </ProjectsGrid>
 
-      {/* 👇 NEW: YOUR PROJECT PROGRESS HEADING */}
       <SectionTitle>Your Project Progress</SectionTitle>
-
       <ProgressGrid>
-        {/* Progress Card 1 */}
-        <ProgressCard>
-          <ProgressImage src={avatarProgress1} alt="Project" />
-          <ProgressInfo>
-            <ProgressTitle>Renovation & Remodelling</ProgressTitle>
-            <ProgressCost>Cost : $1,25,000</ProgressCost>
-            <ProgressBar>
-              <ProgressFill style={{ width: '80%' }} />
-              <ProgressText>Progress 80%</ProgressText>
-            </ProgressBar>
-          </ProgressInfo>
-        </ProgressCard>
+        {progressList.map((prog) => (
+          <ProgressCard key={prog.id}>
+            <ProgressImage src={prog.avatar} alt="Project" />
+            <ProgressInfo>
+              <ProgressTitle>{prog.title}</ProgressTitle>
+              <ProgressCost>Cost : {prog.cost}</ProgressCost>
+              <ProgressBar>
+                <ProgressFill style={{ width: `${prog.percent}%` }} />
+                <ProgressText>Progress {prog.percent}%</ProgressText>
+              </ProgressBar>
+            </ProgressInfo>
+          </ProgressCard>
+        ))}
 
-        {/* Progress Card 2 */}
-        <ProgressCard>
-          <ProgressImage src={avatarProgress2} alt="Project" />
-          <ProgressInfo>
-            <ProgressTitle>Bathroom Renovation</ProgressTitle>
-            <ProgressCost>Cost : $1,000</ProgressCost>
-            <ProgressBar>
-              <ProgressFill style={{ width: '45%' }} />
-              <ProgressText>Progress 45%</ProgressText>
-            </ProgressBar>
-          </ProgressInfo>
-        </ProgressCard>
-
-        {/* Browse More Card */}
         <BrowseMoreCard>
           <PlusIcon>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -272,7 +239,6 @@ const HomePage = () => {
 };
 
 // --- STYLED COMPONENTS ---
-
 const Container = styled.div`
   background: #fff;
   min-height: 100vh;
@@ -290,10 +256,7 @@ const Header = styled.div`
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin: 0 0 16px 0;
   transition: box-shadow 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-  }
+  &:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
 `;
 
 const LeftSection = styled.div`
@@ -331,16 +294,8 @@ const LogoText = styled.div`
   font-size: 14px;
   font-weight: 500;
   line-height: 1.25;
-
-  strong {
-    color: #333;
-  }
-
-  small {
-    font-size: 12px;
-    color: #7a7a7a;
-    display: block;
-  }
+  strong { color: #333; }
+  small { font-size: 12px; color: #7a7a7a; display: block; }
 `;
 
 const SearchBar = styled.input`
@@ -353,19 +308,9 @@ const SearchBar = styled.input`
   color: #444;
   outline: none;
   transition: all 0.2s ease;
-
-  &::placeholder {
-    color: #bbb;
-  }
-
-  &:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-  }
-
-  &:hover {
-    border-color: #b0b0b0;
-  }
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: #007bff; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); }
+  &:hover { border-color: #b0b0b0; }
 `;
 
 const FilterButton = styled.button`
@@ -378,11 +323,7 @@ const FilterButton = styled.button`
   color: #555;
   cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    background: #ebebeb;
-    border-color: #d0d0d0;
-  }
+  &:hover { background: #ebebeb; border-color: #d0d0d0; }
 `;
 
 const IconCircle = styled.div`
@@ -397,12 +338,7 @@ const IconCircle = styled.div`
   position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #d0d0d0;
-    background: #f9f9f9;
-    transform: translateY(-1px);
-  }
+  &:hover { border-color: #d0d0d0; background: #f9f9f9; transform: translateY(-1px); }
 `;
 
 const RedDot = styled.div`
@@ -427,11 +363,7 @@ const UserDropdown = styled.div`
   padding: 4px 12px 4px 7px;
   cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #d0d0d0;
-    background: #f9f9f9;
-  }
+  &:hover { border-color: #d0d0d0; background: #f9f9f9; }
 `;
 
 const UserAvatar = styled.img`
@@ -448,7 +380,7 @@ const UserName = styled.span`
   display: block;
 `;
 
-const UserEmail = styled.span` /* 👈 NEW: Email below name */
+const UserEmail = styled.span`
   font-size: 12px;
   color: #666;
   display: block;
@@ -479,10 +411,7 @@ const DropdownItem = styled.div`
   color: #555;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: #f5f5f5;
-  }
+  &:hover { background: #f5f5f5; }
 `;
 
 const MainContent = styled.div`
@@ -496,31 +425,19 @@ const CommunityCard = styled.div`
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  min-width: 600px; /* 👈 Increased width */
-  max-width: 800px; /* 👈 Set max width */
-  height: 180px; /* 👈 Adjusted height */
-  padding: 24px 32px; /* 👈 Adjusted padding */
+  min-width: 600px;
+  max-width: 800px;
+  height: 180px;
+  padding: 24px 32px;
   display: flex;
-  align-items: center; /* Center content vertically */
+  align-items: center;
   position: relative;
-`;
-
-const CommunityTitle = styled.div`
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 38px;
-  color: #1e1e1e;
-  text-align: left; /* 👈 Left aligned */
-  span { 
-    font-size: 28px; 
-    letter-spacing: 0px; 
-  }
 `;
 
 const CommunityHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Align to top */
+  align-items: flex-start;
   width: 100%;
 `;
 
@@ -528,13 +445,22 @@ const CommunityContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px; /* Space between button and title */
+  gap: 8px;
+`;
+
+const CommunityTitle = styled.div`
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 38px;
+  color: #1e1e1e;
+  text-align: left;
+  span { font-size: 28px; letter-spacing: 0px; }
 `;
 
 const CommunityAvatars = styled.div`
   display: flex;
   align-items: center;
-  gap: -12px; /* Overlap avatars */
+  gap: -12px;
 `;
 
 const ExploreButton = styled.button`
@@ -549,30 +475,18 @@ const ExploreButton = styled.button`
   box-shadow: 0 2px 8px rgba(0,0,0,0.11);
   cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    background: #232323;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-`;
-
-const Avatars = styled.div`
-  display: flex;
-  margin-top: 6px;
+  &:hover { background: #232323; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 `;
 
 const Avatar = styled.div`
-  width: 100px; /* 👈 Smaller size */
+  width: 100px;
   height: 100px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid #fff; /* 👈 Thinner border */
+  border: 3px solid #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.10);
-  margin-left: -12px; /* 👈 Overlap */
-  &:first-child {
-    margin-left: 0;
-  }
+  margin-left: -12px;
+  &:first-child { margin-left: 0; }
 `;
 
 const AvatarImg = styled.img`
@@ -683,10 +597,7 @@ const ChatIcon = styled.div`
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: #e0e0e0;
-  }
+  &:hover { background: #e0e0e0; }
 `;
 
 const ProjectImage = styled.img`
@@ -781,11 +692,7 @@ const BrowseMoreCard = styled.div`
   padding: 32px 16px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  }
+  &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 `;
 
 const PlusIcon = styled.div`
@@ -805,4 +712,14 @@ const BrowseText = styled.div`
   color: #333;
 `;
 
-export default HomePage;
+const LoadingScreen = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  color: #555;
+  font-size: 18px;
+`;
+
+export default ClientDashboard;

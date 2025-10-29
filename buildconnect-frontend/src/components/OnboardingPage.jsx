@@ -35,12 +35,14 @@ const OnboardingPage = () => {
             <Icon icon="mingcute:user-3-line" width="20" height="20" style={{ marginRight: '8px' }} />
             As a Client
           </RoleButton>
-
-          {/* 👇 RED BUTTON — As a Professional (you can link later) */}
-          <RoleButton bg="#dc3545" color="white">
-            <Icon icon="mingcute:user-add-line" width="20" height="20" style={{ marginRight: '8px' }} />
-            As a Professional
-          </RoleButton>
+<RoleButton
+  bg="#dc3545"
+  color="white"
+  onClick={() => navigate('/dashboard')} // ✅ Add this!
+>
+  <Icon icon="mingcute:user-add-line" width="20" height="20" style={{ marginRight: '8px' }} />
+  As a Professional
+</RoleButton>
         </ButtonGroup>
       </Card>
     </Container>

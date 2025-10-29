@@ -5,9 +5,9 @@ const Footer = () => {
   return (
     <FooterContainer>
       <FooterText>
-        <MadeByText>Made by</MadeByText>
-        <BrandName>धाराLabs</BrandName>
-      </FooterText>
+        <MadeByText></MadeByText>
+        <BrandName></BrandName>
+      </FooterText> 
     </FooterContainer>
   );
 };
