@@ -41,9 +41,9 @@ const OnboardingPage2 = () => {
           ))}
         </ServiceGrid>
 
-        <NextButton onClick={() => navigate('/onboarding3')}>
-          Next Step →
-        </NextButton>
+<NextButton onClick={() => navigate('/HomePage')}>
+  Next Step →
+</NextButton>
       </Card>
     </Container>
   );

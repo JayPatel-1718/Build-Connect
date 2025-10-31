@@ -1,60 +1,255 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../firebase'; // 👈 Import Firebase auth
+import { Link, useNavigate } from 'react-router-dom';
+import { auth, db } from '../firebase';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 // ✅ IMAGES — Place these in public/ folder
-const avatar1 = "/11.png";           // Community avatars
+const avatar1 = "/11.png";
 const avatar2 = "/12.png";
 const avatar3 = "/13.png";
-const avatarKabir = "/11.png";        // Project user avatars
+const avatarKabir = "/11.png";
 const avatarRahul = "/15.png";
 const avatarJohn = "/13.png";
-const avatarProgress1 = "/11.png";    // Progress card images
+const avatarProgress1 = "/11.png";
 const avatarProgress2 = "/15.png";
 
-const HomePage = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setUser] = useState(null); // 👈 Track logged-in user
+// Mock data for recommended projects
+const mockRecommendedProjects = [
+  {
+    id: '4',
+    name: 'Kabir Sharma',
+    role: 'Architect',
+    avatar: avatarKabir,
+    projectImage: '/image.png',
+    category: 'Renovation & Remodelling',
+    status: 'Ready to work',
+    chatIcon: true
+  },
+  {
+    id: '1',
+    name: 'Rahul Mehta',
+    role: 'Interior Designer',
+    avatar: avatarRahul,
+    projectImage: '/image-1.png',
+    category: 'Interior Design Services',
+    status: 'Ready to work',
+    chatIcon: true
+  },
+  {
+    id: '2',
+    name: 'John Doe',
+    role: 'Construction Manager',
+    avatar: avatarJohn,
+    projectImage: '/image-2.png',
+    category: 'Construction Services',
+    status: 'Ready to work',
+    chatIcon: true
+  },
+  {
+    id: '3',
+    name: 'Nikita Desai',
+    role: 'Civil Engineer',
+    avatar: avatar3,
+    projectImage: '/image.png',
+    category: 'Structural Engineering',
+    status: 'Available',
+    chatIcon: false
+  },
+  {
+    id: '5',
+    name: 'Priya Nair',
+    role: 'Plumbing Engineer',
+    avatar: avatar2,
+    projectImage: '/image-1.png',
+    category: 'Plumbing & Water Systems',
+    status: 'Ready to work',
+    chatIcon: true
+  },
+  {
+    id: '6',
+    name: 'Vikram Singh',
+    role: 'Electrical Engineer',
+    avatar: avatar1,
+    projectImage: '/image-2.png',
+    category: 'Electrical Installations',
+    status: 'Available',
+    chatIcon: false
+  }
+];
 
-  // ✅ Check if user is logged in when component mounts
+// Mock data for user projects (fallback)
+const getFallbackProjects = () => [
+  {
+    id: '1',
+    title: "Renovation & Remodelling",
+    cost: "$1,25,000",
+    progress: 80,
+    tasks: [
+      { name: "Demolition", status: "completed", date: "Oct 5" },
+      { name: "Electrical Wiring", status: "completed", date: "Oct 10" },
+      { name: "Plumbing", status: "completed", date: "Oct 15" },
+      { name: "Wall Painting", status: "completed", date: "Oct 20" },
+      { name: "Flooring", status: "in-progress", date: "Oct 25" },
+    ]
+  },
+  {
+    id: '2',
+    title: "Bathroom Renovation",
+    cost: "$1,000",
+    progress: 45,
+    tasks: [
+      { name: "Tile Removal", status: "completed", date: "Oct 8" },
+      { name: "Waterproofing", status: "completed", date: "Oct 12" },
+      { name: "New Tiling", status: "in-progress", date: "Oct 20" },
+      { name: "Sanitary Fittings", status: "pending", date: "Oct 28" },
+    ]
+  }
+];
+
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [userProjects, setUserProjects] = useState(getFallbackProjects()); // Start with fallback
+  const [expandedProjectId, setExpandedProjectId] = useState(null);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // --- NEWS STATE ---
+  const [news, setNews] = useState([]);
+  const [loadingNews, setLoadingNews] = useState(true);
+  const [newsError, setNewsError] = useState(null);
+
+  // 1. Fetch user auth state and profile
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        console.log('User is logged in:', currentUser);
-        setUser(currentUser); // 👈 Set user data
+        setUser(currentUser);
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            setUserProfile(userDoc.data());
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
       } else {
-        console.log('No user is logged in');
-        // Optionally redirect to login page
-        // navigate('/'); // Uncomment if using useNavigate
+        setUser(null);
+        setUserProfile(null);
       }
     });
 
-    // Cleanup subscription
     return () => unsubscribe();
   }, []);
 
-  // ✅ Sign out function
+  // 2. Fetch user projects or set fallback
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!user) {
+        setUserProjects(getFallbackProjects());
+        setLoadingProjects(false);
+        return;
+      }
+
+      setLoadingProjects(true);
+      try {
+        const projectsQuery = query(
+          collection(db, 'projects'),
+          where('userId', '==', user.uid)
+        );
+        const projectsSnapshot = await getDocs(projectsQuery);
+        const projectsList = [];
+        projectsSnapshot.forEach((doc) => {
+          projectsList.push({ id: doc.id, ...doc.data() });
+        });
+        setUserProjects(projectsList);
+      } catch (error) {
+        console.error('Error fetching projects from Firestore:', error);
+        setUserProjects(getFallbackProjects());
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+  }, [user]); // Depend on `user` state
+
+  // 3. Fetch News from NewsAPI.org
+  useEffect(() => {
+    const fetchNews = async () => {
+      setLoadingNews(true);
+      setNewsError(null);
+      try {
+        // ✅ YOUR API KEY GOES HERE
+        const API_KEY = "7d53f07fa2ff4613b665ebeb67096b8b"; // 👈 REPLACE THIS
+        const query = "construction OR interior design OR civil engineering OR architecture";
+        const sortBy = "publishedAt"; // Options: relevancy, popularity, publishedAt
+        const pageSize = 1; // Number of articles
+
+        const response = await fetch(
+          `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=${sortBy}&pageSize=${pageSize}&apiKey=${API_KEY}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Filter articles with images (NewsAPI sometimes returns articles without images)
+        const validArticles = data.articles.filter(article => article.urlToImage);
+
+        setNews(validArticles.slice(0, 3)); // Get first 3 valid articles
+      } catch (err) {
+        console.error("Failed to fetch news:", err);
+        setNewsError("Failed to load news. Please try again later.");
+
+        // Fallback news if API fails
+        setNews([
+          {
+            title: "Welcome to BuildConnect News!",
+            description: "Stay tuned for the latest updates in construction and design. This feed will populate with live news soon.",
+            url: "#",
+            urlToImage: "/image.png", // Your fallback image
+            publishedAt: new Date().toISOString(),
+            source: { name: "BuildConnect" }
+          }
+        ]);
+      } finally {
+        setLoadingNews(false);
+      }
+    };
+
+    fetchNews();
+  }, []); // Run once on mount
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      console.log('User signed out');
-      // Optionally redirect to login page
-      // navigate('/');
     } catch (error) {
       console.error('Sign out error:', error);
     }
   };
 
-  // ✅ Get user display name (from Google or email)
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  const displayName = userProfile?.firstName || user?.displayName || user?.email?.split('@')[0] || 'User';
   const displayEmail = user?.email || 'user@example.com';
-  const displayAvatar = user?.photoURL || avatar1; // Use Google avatar or fallback
+  const displayAvatar = user?.photoURL || avatar1;
+
+  const toggleProjectDetails = (projectId) => {
+    setExpandedProjectId(expandedProjectId === projectId ? null : projectId);
+  };
+
+  const handleBrowseMore = () => {
+    alert("Browse More clicked! This will open project discovery page.");
+  };
 
   return (
     <Container>
+      {/* NAVBAR - Same as HomePage */}
       <Header>
-        {/* LEFT SIDE: Logo + Search + Filters */}
         <LeftSection>
           <LogoSection>
             <LogoIcon>
@@ -69,13 +264,10 @@ const HomePage = () => {
               <small>by PixelFusion</small>
             </LogoText>
           </LogoSection>
-
-          <SearchBar placeholder="Type something here....." />
-
+          <SearchBar placeholder="Search projects, professionals, services..." />
           <FilterButton>Filters</FilterButton>
         </LeftSection>
 
-        {/* RIGHT SIDE: Messages + Notifications + Profile */}
         <RightSection>
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -97,7 +289,6 @@ const HomePage = () => {
             <RedDot />
           </IconCircle>
 
-          {/* 👇 UPDATED: Show real user data */}
           <UserDropdown onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
             <UserAvatar src={displayAvatar} alt="User" />
             <div>
@@ -118,147 +309,154 @@ const HomePage = () => {
         </RightSection>
       </Header>
 
-      {/* MAIN CONTENT */}
       <MainContent>
-        {/* THE COMMUNITY CARD */}
-         {/* THE COMMUNITY CARD */}
-<CommunityCard>
-  <CommunityHeader>
-    <CommunityContent>
-      <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-            <ExploreButton>Explore Now</ExploreButton>
+        {/* COMMUNITY CARD */}
+        <CommunityCard>
+          <CommunityHeader>
+            <CommunityContent>
+              <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
+              <ExploreButton>Explore Now</ExploreButton>
+            </CommunityContent>
+            <CommunityAvatars>
+              <Avatar>
+                <AvatarImg src={avatar1} alt="Avatar1" />
+              </Avatar>
+              <Avatar>
+                <AvatarImg src={avatar2} alt="Avatar2" />
+              </Avatar>
+              <Avatar>
+                <AvatarImg src={avatar3} alt="Avatar3" />
+              </Avatar>
+            </CommunityAvatars>
+          </CommunityHeader>
+        </CommunityCard>
 
-    </CommunityContent>
-    <CommunityAvatars>
-      <Avatar>
-        <AvatarImg src={avatar1} alt="Avatar1" />
-      </Avatar>
-      <Avatar>
-        <AvatarImg src={avatar2} alt="Avatar2" />
-      </Avatar>
-      <Avatar>
-        <AvatarImg src={avatar3} alt="Avatar3" />
-      </Avatar>
-    </CommunityAvatars>
-  </CommunityHeader>
-</CommunityCard>
-
-        {/* FEED CARD */}
-        <FeedCard>
-          <FeedIcon>
-            <img 
-              src="/image.png" 
-              alt="Event" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-            />
-          </FeedIcon>
-          <FeedBody>
-            <FeedTitle>World of Concrete India 2025</FeedTitle>
-            <FeedDesc>
-              Scheduled from October 8–10, 2025, at the Bombay Exhibition Centre in Mumbai, this event will showcase advancements in waterproofing technologies and other construction innovations.
-            </FeedDesc>
-            <FeedTime>58s ago</FeedTime>
-          </FeedBody>
-        </FeedCard>
+        {/* NEWS FEED SECTION */}
+        <NewsSection>
+          <SectionTitle>Industry News</SectionTitle>
+          {loadingNews ? (
+            <NewsLoadingCard>
+              <p>Loading latest news...</p>
+            </NewsLoadingCard>
+          ) : newsError ? (
+            <NewsErrorCard>
+              <p>{newsError}</p>
+            </NewsErrorCard>
+          ) : (
+            <NewsGrid>
+              {news.map((article, index) => (
+                <NewsCard key={index} onClick={() => window.open(article.url, '_blank')}>
+                  {article.urlToImage && (
+                    <NewsImage src={article.urlToImage} alt={article.title} />
+                  )}
+                  <NewsContent>
+                    <NewsSource>{article.source.name}</NewsSource>
+                    <NewsTitle>{article.title}</NewsTitle>
+                    <NewsDesc>{article.description}</NewsDesc>
+                    <NewsTime>
+                      {new Date(article.publishedAt).toLocaleDateString()} • 
+                      {" "}{new Date(article.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </NewsTime>
+                  </NewsContent>
+                </NewsCard>
+              ))}
+            </NewsGrid>
+          )}
+        </NewsSection>
       </MainContent>
 
-      {/* RECOMMENDED PROJECTS SECTION */}
-      <SectionTitle>Recommend Projects</SectionTitle>
-
+      {/* RECOMMENDED PROJECTS */}
+      <SectionHeader>
+        <SectionTitle>Recommend Projects</SectionTitle>
+        <FilterButton onClick={() => setShowFilters(!showFilters)}>Filters</FilterButton>
+        {showFilters && (
+          <FilterDropdown>
+            <FilterItem>All Categories</FilterItem>
+            <FilterItem>Interior Design</FilterItem>
+            <FilterItem>Construction</FilterItem>
+            <FilterItem>Electrical</FilterItem>
+            <FilterItem>Plumbing</FilterItem>
+          </FilterDropdown>
+        )}
+      </SectionHeader>
       <ProjectsGrid>
-        {/* Project 1 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarKabir} alt="Kabir Sharma" />
-              <UserInfo>
-                <UserName>Kabir Sharma</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image.png" alt="Project" />
-          <CategoryLabel>Renovation & Remodelling</CategoryLabel>
-        </ProjectCard>
-
-        {/* Project 2 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarRahul} alt="Rahul Mehta" />
-              <UserInfo>
-                <UserName>Rahul Mehta</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image-1.png" alt="Project" />
-          <CategoryLabel>Interior Design Services</CategoryLabel>
-        </ProjectCard>
-
-        {/* Project 3 */}
-        <ProjectCard>
-          <ProjectHeader>
-            <UserSection>
-              <UserAvatar src={avatarJohn} alt="John Doe" />
-              <UserInfo>
-                <UserName>John Doe</UserName>
-                <Status>🟢 Ready to work</Status>
-              </UserInfo>
-            </UserSection>
-            <ChatIcon>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5h3v-3h4v3h3l-5 5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </ChatIcon>
-          </ProjectHeader>
-          <ProjectImage src="/image-2.png" alt="Project" />
-          <CategoryLabel>Construction Services</CategoryLabel>
-        </ProjectCard>
+        {mockRecommendedProjects.map((project) => (
+          <Link to={`/profile/${project.id}`} key={project.id} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+            <ProjectCard>
+              <ProjectHeader>
+                <UserSection>
+                  <UserAvatar src={project.avatar} alt={project.name} />
+                  <UserInfo>
+                    <UserName>{project.name}</UserName>
+                    <Status>🟢 {project.status}</Status>
+                  </UserInfo>
+                </UserSection>
+                {project.chatIcon && (
+                  <ChatIcon>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="#000" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10H4a2 2 0 0 1-2-2v-8C2 6.477 6.477 2 12 2m0 2a8 8 0 0 0-8 8v8h8a8 8 0 1 0 0-16m0 10a1 1 0 0 1 .117 1.993L12 16H9a1 1 0 0 1-.117-1.993L9 14zm3-4a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2z"/></g></svg>
+                  </ChatIcon>
+                )}
+              </ProjectHeader>
+              <ProjectImage src={project.projectImage} alt={project.category} />
+              <CategoryLabel>{project.category}</CategoryLabel>
+            </ProjectCard>
+          </Link>
+        ))}
       </ProjectsGrid>
 
-      {/* 👇 NEW: YOUR PROJECT PROGRESS HEADING */}
-      <SectionTitle>Your Project Progress</SectionTitle>
-
+      {/* YOUR PROJECTS */}
+      <SectionTitle>Your Projects</SectionTitle>
       <ProgressGrid>
-        {/* Progress Card 1 */}
-        <ProgressCard>
-          <ProgressImage src={avatarProgress1} alt="Project" />
-          <ProgressInfo>
-            <ProgressTitle>Renovation & Remodelling</ProgressTitle>
-            <ProgressCost>Cost : $1,25,000</ProgressCost>
-            <ProgressBar>
-              <ProgressFill style={{ width: '80%' }} />
-              <ProgressText>Progress 80%</ProgressText>
-            </ProgressBar>
-          </ProgressInfo>
-        </ProgressCard>
+        {loadingProjects ? (
+          <NoProjectsCard>
+            <p>Loading your projects...</p>
+          </NoProjectsCard>
+        ) : userProjects.length > 0 ? (
+          userProjects.map((project) => (
+            <React.Fragment key={project.id}>
+              <ProgressCard onClick={() => toggleProjectDetails(project.id)}>
+                <ProgressImage 
+                  src={project.id === '1' ? avatarProgress1 : avatarProgress2} 
+                  alt="Project" 
+                />
+                <ProgressInfo>
+                  <ProgressTitle>{project.title}</ProgressTitle>
+                  <ProgressCost>Cost : {project.cost}</ProgressCost>
+                  <ProgressBar>
+                    <ProgressFill style={{ width: `${project.progress}%` }} />
+                    <ProgressText>Progress {project.progress}%</ProgressText>
+                  </ProgressBar>
+                </ProgressInfo>
+              </ProgressCard>
 
-        {/* Progress Card 2 */}
-        <ProgressCard>
-          <ProgressImage src={avatarProgress2} alt="Project" />
-          <ProgressInfo>
-            <ProgressTitle>Bathroom Renovation</ProgressTitle>
-            <ProgressCost>Cost : $1,000</ProgressCost>
-            <ProgressBar>
-              <ProgressFill style={{ width: '45%' }} />
-              <ProgressText>Progress 45%</ProgressText>
-            </ProgressBar>
-          </ProgressInfo>
-        </ProgressCard>
+              {expandedProjectId === project.id && (
+                <TaskListCard>
+                  <TaskSectionTitle>Work Progress</TaskSectionTitle>
+                  {project.tasks.map((task, idx) => (
+                    <TaskItem key={idx}>
+                      <TaskStatus status={task.status}>
+                        {task.status === 'completed' ? '✓' : task.status === 'in-progress' ? '⋯' : '○'}
+                      </TaskStatus>
+                      <TaskName>{task.name}</TaskName>
+                      <TaskDate>{task.date}</TaskDate>
+                    </TaskItem>
+                  ))}
+                </TaskListCard>
+              )}
+            </React.Fragment>
+          ))
+        ) : (
+          <NoProjectsCard>
+            <PlusIcon>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </PlusIcon>
+            <p>No projects found. Start a new one!</p>
+          </NoProjectsCard>
+        )}
 
-        {/* Browse More Card */}
-        <BrowseMoreCard>
+        <BrowseMoreCard onClick={handleBrowseMore}>
           <PlusIcon>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -273,8 +471,120 @@ const HomePage = () => {
 
 // --- STYLED COMPONENTS ---
 
-const Container = styled.div`
+// --- (Keep all your existing styled components) ---
+
+// --- NEW NEWS STYLED COMPONENTS ---
+
+const NewsSection = styled.div`
+  flex: 1; /* Take remaining space */
+  min-width: 300px; /* Minimum width for responsiveness */
+  margin-left: 20px; /* Space between community card and news */
+`;
+
+const NewsGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const NewsCard = styled.div`
   background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const NewsImage = styled.img`
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+const NewsContent = styled.div`
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+`;
+
+const NewsSource = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+`;
+
+const NewsTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+  flex-grow: 1; /* Pushes description down */
+`;
+
+const NewsDesc = styled.p`
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+`;
+
+const NewsTime = styled.div`
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  margin-top: auto; /* Pushes to bottom */
+`;
+
+const NewsLoadingCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  text-align: center;
+  border: 1px solid #eee;
+
+  p {
+    margin: 0;
+    color: #777;
+    font-size: 16px;
+  }
+`;
+
+const NewsErrorCard = styled.div`
+  background: #ffecec;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #fcc;
+  color: #c33;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+`;
+
+// --- (Keep all other styled components below) ---
+
+const Container = styled.div`
+  background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
   min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   padding: 18px 0 0 0;
@@ -285,42 +595,43 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   background: #fff;
-  border-radius: 12px;
-  padding: 10px 30px 10px 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin: 0 0 16px 0;
-  transition: box-shadow 0.3s ease;
+  border-radius: 16px;
+  padding: 12px 32px 12px 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  margin: 0 0 20px 0;
+  transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
   }
 `;
 
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const RightSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 19px;
+  gap: 22px;
 `;
 
 const LogoSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 `;
 
 const LogoIcon = styled.div`
   svg {
-    width: 34px;
-    height: 34px;
-    background: #333;
-    border-radius: 8px;
-    padding: 5px;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #333 0%, #000 100%);
+    border-radius: 10px;
+    padding: 6px;
     fill: none;
     stroke: white;
     stroke-width: 2;
@@ -328,12 +639,13 @@ const LogoIcon = styled.div`
 `;
 
 const LogoText = styled.div`
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
 
   strong {
-    color: #333;
+    color: #222;
+    letter-spacing: -0.2px;
   }
 
   small {
@@ -344,23 +656,26 @@ const LogoText = styled.div`
 `;
 
 const SearchBar = styled.input`
-  max-width: 250px;
-  height: 32px;
+  max-width: 280px;
+  height: 36px;
   font-size: 14px;
-  padding: 0 18px;
+  padding: 0 20px;
   border: 1px solid #e0e0e0;
-  border-radius: 18px;
+  border-radius: 20px;
   color: #444;
+  background: #f9f9f9;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 
   &::placeholder {
-    color: #bbb;
+    color: #aaa;
   }
 
   &:focus {
     border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+    background: white;
   }
 
   &:hover {
@@ -370,24 +685,27 @@ const SearchBar = styled.input`
 
 const FilterButton = styled.button`
   background: #f5f5f5;
-  border-radius: 16px;
+  border-radius: 20px;
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 500;
   border: 1px solid #e0e0e0;
-  padding: 8px 21px;
+  padding: 9px 24px;
   color: #555;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 
   &:hover {
     background: #ebebeb;
     border-color: #d0d0d0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
   }
 `;
 
 const IconCircle = styled.div`
-  width: 39px;
-  height: 39px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: #fff;
   border: 2.3px solid #f1f1f1;
@@ -396,12 +714,14 @@ const IconCircle = styled.div`
   justify-content: center;
   position: relative;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 `;
 
@@ -409,36 +729,41 @@ const RedDot = styled.div`
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 8px;
-  height: 8px;
-  background: red;
+  width: 10px;
+  height: 10px;
+  background: #e74c3c;
   border-radius: 50%;
-  border: 1px solid white;
+  border: 1.5px solid white;
+  box-shadow: 0 0 0 2px #fff;
 `;
 
 const UserDropdown = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   background: #fff;
-  border-radius: 22px;
+  border-radius: 24px;
   border: 2.3px solid #f1f1f1;
-  padding: 4px 12px 4px 7px;
+  padding: 5px 14px 5px 9px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
 `;
 
 const UserAvatar = styled.img`
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #f0f0f0;
 `;
 
 const UserName = styled.span`
@@ -446,21 +771,193 @@ const UserName = styled.span`
   font-weight: 500;
   color: #222;
   display: block;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-const UserEmail = styled.span` /* 👈 NEW: Email below name */
+const UserEmail = styled.span`
   font-size: 12px;
   color: #666;
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Arrow = styled.span`
-  font-size: 13px;
+  font-size: 14px;
   color: #888;
+  margin-left: 4px;
 `;
 
 const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 10px 0;
+  min-width: 180px;
+  z-index: 1000;
+  margin-top: 8px;
+  transform: translateY(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+
+  ${UserDropdown}:hover & {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+`;
+
+const DropdownItem = styled.div`
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: #f5f5f5;
+    color: #222;
+  }
+`;
+
+const MainContent = styled.div`
+  display: flex;
+  gap: 26px;
+  padding-left: 14px;
+  margin-top: 6px;
+`;
+
+const CommunityCard = styled.div`
+  background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  min-width: 620px;
+  max-width: 840px;
+  height: 200px;
+  padding: 28px 36px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+`;
+
+const CommunityTitle = styled.div`
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 42px;
+  color: #1e1e1e;
+  text-align: left;
+  letter-spacing: -0.5px;
+
+  span { 
+    font-size: 32px; 
+    letter-spacing: 0px; 
+    font-weight: 600;
+    color: #555;
+  }
+`;
+
+const CommunityHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+`;
+
+const CommunityContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+`;
+
+const CommunityAvatars = styled.div`
+  display: flex;
+  align-items: center;
+  gap: -14px;
+`;
+
+const ExploreButton = styled.button`
+  background: linear-gradient(135deg, #000 0%, #333 100%);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 11px 36px;
+  margin-bottom: 11px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.11);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: linear-gradient(135deg, #232323 0%, #444 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  }
+`;
+
+const Avatars = styled.div`
+  display: flex;
+  margin-top: 6px;
+`;
+
+const Avatar = styled.div`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.10);
+  margin-left: -29px;
+  &:first-child {
+    margin-left: 0;
+  }
+`;
+
+const AvatarImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 32px 0 16px 12px;
+  position: relative; /* For dropdown positioning */
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+  margin: 36px 0 18px 14px;
+  letter-spacing: -0.2px;
+`;
+
+const FilterDropdown = styled.div`
   position: absolute;
   top: 100%;
   right: 0;
@@ -473,7 +970,7 @@ const DropdownMenu = styled.div`
   margin-top: 8px;
 `;
 
-const DropdownItem = styled.div`
+const FilterItem = styled.div`
   padding: 10px 16px;
   font-size: 14px;
   color: #555;
@@ -485,182 +982,40 @@ const DropdownItem = styled.div`
   }
 `;
 
-const MainContent = styled.div`
-  display: flex;
-  gap: 22px;
-  padding-left: 12px;
-  margin-top: 4px;
-`;
-
-const CommunityCard = styled.div`
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  min-width: 600px; /* 👈 Increased width */
-  max-width: 800px; /* 👈 Set max width */
-  height: 180px; /* 👈 Adjusted height */
-  padding: 24px 32px; /* 👈 Adjusted padding */
-  display: flex;
-  align-items: center; /* Center content vertically */
-  position: relative;
-`;
-
-const CommunityTitle = styled.div`
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 38px;
-  color: #1e1e1e;
-  text-align: left; /* 👈 Left aligned */
-  span { 
-    font-size: 28px; 
-    letter-spacing: 0px; 
-  }
-`;
-
-const CommunityHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start; /* Align to top */
-  width: 100%;
-`;
-
-const CommunityContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px; /* Space between button and title */
-`;
-
-const CommunityAvatars = styled.div`
-  display: flex;
-  align-items: center;
-  gap: -12px; /* Overlap avatars */
-`;
-
-const ExploreButton = styled.button`
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 20px;
-  font-size: 18px;
-  font-weight: 500;
-  padding: 9px 31px;
-  margin-bottom: 9px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.11);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #232323;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
-`;
-
-const Avatars = styled.div`
-  display: flex;
-  margin-top: 6px;
-`;
-
-const Avatar = styled.div`
-  width: 100px; /* 👈 Smaller size */
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid #fff; /* 👈 Thinner border */
-  box-shadow: 0 0 10px rgba(0,0,0,0.10);
-  margin-left: -12px; /* 👈 Overlap */
-  &:first-child {
-    margin-left: 0;
-  }
-`;
-
-const AvatarImg = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const FeedCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.09);
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 22px 28px 19px 15px;
-  min-width: 390px;
-  margin-bottom: 16px;
-`;
-
-const FeedIcon = styled.div`
-  width: 64px;
-  height: 64px;
-  background: none;
-  border-radius: 11px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const FeedBody = styled.div`
-  flex: 1;
-`;
-
-const FeedTitle = styled.div`
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 5px;
-`;
-
-const FeedDesc = styled.div`
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 7px;
-  line-height: 1.4;
-  max-width: 450px;
-`;
-
-const FeedTime = styled.div`
-  font-size: 13px;
-  color: #bbb;
-  font-weight: 500;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin: 32px 0 16px 12px;
-`;
-
 const ProjectsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 22px;
-  padding: 0 12px 22px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 26px;
+  padding: 0 14px 26px 14px;
 `;
 
 const ProjectCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
 `;
 
 const ProjectHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
 `;
 
 const UserSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 `;
 
 const UserInfo = styled.div`
@@ -669,64 +1024,92 @@ const UserInfo = styled.div`
 `;
 
 const Status = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   color: #27ae60;
+  font-weight: 500;
 `;
 
 const ChatIcon = styled.div`
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.3s ease;
+  border: 1px solid #e0e0e0;
 
   &:hover {
     background: #e0e0e0;
+    transform: scale(1.05);
   }
 `;
 
 const ProjectImage = styled.img`
   width: 100%;
-  height: 200px;
+  height: 220px;
   object-fit: cover;
+  transition: transform 0.3s ease;
+
+  ${ProjectCard}:hover & {
+    transform: scale(1.02);
+  }
 `;
 
 const CategoryLabel = styled.div`
   background: #f0f0f0;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 14px;
+  font-size: 15px;
+  font-weight: 600;
   text-align: center;
   color: #333;
   border-top: 1px solid #eee;
+  transition: background 0.3s ease;
+
+  ${ProjectCard}:hover & {
+    background: #e8e8e8;
+  }
 `;
 
 const ProgressGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 22px;
-  padding: 0 12px 32px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 26px;
+  padding: 0 14px 36px 14px;
 `;
 
 const ProgressCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   display: flex;
   align-items: center;
-  padding: 16px;
-  gap: 16px;
+  padding: 18px;
+  gap: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
 `;
 
 const ProgressImage = styled.img`
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+
+  ${ProgressCard}:hover & {
+    border-color: #007bff;
+    transform: scale(1.05);
+  }
 `;
 
 const ProgressInfo = styled.div`
@@ -734,16 +1117,17 @@ const ProgressInfo = styled.div`
 `;
 
 const ProgressTitle = styled.div`
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: #333;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 `;
 
 const ProgressCost = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   color: #555;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
+  font-weight: 500;
 `;
 
 const ProgressBar = styled.div`
@@ -752,12 +1136,14 @@ const ProgressBar = styled.div`
   height: 12px;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 `;
 
 const ProgressFill = styled.div`
-  background: #27ae60;
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
   height: 100%;
-  transition: width 0.4s ease;
+  transition: width 0.6s ease;
+  box-shadow: 0 2px 4px rgba(39, 174, 96, 0.3);
 `;
 
 const ProgressText = styled.div`
@@ -767,42 +1153,156 @@ const ProgressText = styled.div`
   transform: translateY(-50%);
   font-size: 12px;
   color: white;
-  font-weight: 500;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 `;
 
 const BrowseMoreCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 40px 18px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
   }
 `;
 
 const PlusIcon = styled.div`
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border: 2px solid #000;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #222;
+    transform: scale(1.05);
+  }
 `;
 
 const BrowseText = styled.div`
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
   color: #333;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #000;
+  }
+`;
+
+const NoProjectsCard = styled.div`
+  background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 18px;
+  grid-column: 1 / -1;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+
+  p {
+    margin-top: 14px;
+    color: #777;
+    font-size: 17px;
+    font-weight: 500;
+  }
+`;
+
+const TaskListCard = styled.div`
+  background: #f9f9f9;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 0 14px 26px 14px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+  grid-column: 1 / -1;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: inset 0 2px 12px rgba(0,0,0,0.08);
+  }
+`;
+
+const TaskSectionTitle = styled.div`
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const TaskItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+`;
+
+const TaskStatus = styled.div`
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 15px;
+  color: ${props =>
+    props.status === 'completed' ? '#27ae60' :
+    props.status === 'in-progress' ? '#f2994a' : '#ccc'};
+  margin-right: 14px;
+  border-radius: 50%;
+  background: ${props =>
+    props.status === 'completed' ? '#e8f5e9' :
+    props.status === 'in-progress' ? '#fff8e1' : '#f5f5f5'};
+  border: 1px solid ${props =>
+    props.status === 'completed' ? '#c8e6c9' :
+    props.status === 'in-progress' ? '#ffecb3' : '#e0e0e0'};
+`;
+
+const TaskName = styled.div`
+  flex: 1;
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+`;
+
+const TaskDate = styled.div`
+  font-size: 13px;
+  color: #777;
+  white-space: nowrap;
+  font-weight: 500;
 `;
 
 export default HomePage;

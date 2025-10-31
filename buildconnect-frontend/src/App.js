@@ -5,7 +5,10 @@ import OnboardingPage from './components/OnboardingPage';
 import OnboardingPage2 from './components/OnboardingPage2';
 import OnboardingPage3 from './components/OnboardingPage3';
 import HomePage from './components/HomePage';
-import ClientDashboard from './components/ClientDashboard';
+import ProfessionalDashboard from './components/ProfessionalDashboard';
+import ProfilePage from './components/ProfilePage';
+ 
+
 
 function App() {
   return (
@@ -17,7 +20,9 @@ function App() {
         <Route path="/onboarding2" element={<OnboardingPage2 />} />
         <Route path="/onboarding3" element={<OnboardingPage3 />} />
         <Route path="/homepage" element={<HomePage />} />
-        <Route path="/dashboard" element={<ClientDashboard />} />
+        <Route path="/dashboard" element={< ProfessionalDashboard/>} />
+        <Route path="/profile/:userId" element={<ProfilePage />} /> 
+        
       </Routes>
     </BrowserRouter>
   );

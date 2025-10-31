@@ -27,14 +27,14 @@ const OnboardingPage = () => {
 
         <ButtonGroup>
           {/* 👇 BLUE BUTTON — As a Client → goes to onboarding2 */}
-          <RoleButton
-            bg="#007bff"
-            color="white"
-            onClick={() => navigate('/onboarding2')} // ✅ Now 'navigate' is defined
-          >
-            <Icon icon="mingcute:user-3-line" width="20" height="20" style={{ marginRight: '8px' }} />
-            As a Client
-          </RoleButton>
+<RoleButton
+  bg="#007bff"
+  color="white"
+  onClick={() => navigate('/onboarding2')} // 👈 Changed from '/onboarding2'
+>
+  <Icon icon="mingcute:user-3-line" width="20" height="20" style={{ marginRight: '8px' }} />
+  As a Client
+</RoleButton>
 <RoleButton
   bg="#dc3545"
   color="white"
