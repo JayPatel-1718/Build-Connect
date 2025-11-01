@@ -957,29 +957,27 @@ const LeftSection = styled.div`
   align-items: center;
   gap: 16px;
 `;
-
 const BackButton = styled.button`
-  background: none;
-  border: none;
-  color: #007bff;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
-
+  background: #fff;
+  border: 2px solid #f1f1f1;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;        /* Ensures no underline */
+  outline: none;                /* Removes blue focus ring */
   &:hover {
-    background: #f0f8ff;
-    color: #0056b3;
-    transform: translateX(-2px);
+    border-color: #d0d0d0;
+    background: #f9f9f9;
   }
-
-  &:active {
-    transform: translateX(0);
+  &:focus {
+    outline: none;              /* Critical: removes blue focus outline */
+    box-shadow: none;
   }
 `;
 

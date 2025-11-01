@@ -1,4 +1,4 @@
-// src/components/Community.jsx
+// src/components/CommunityPage.jsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -16,6 +16,7 @@ const CommunityPage = () => {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [loading, setLoading] = useState(true); // ✅ Add loading state
 
   useEffect(() => {
     const authUnsub = onAuthStateChanged(auth, (currentUser) => {
@@ -27,8 +28,15 @@ const CommunityPage = () => {
       query(collection(db, 'communityPosts'), orderBy('timestamp', 'desc')),
       (snapshot) => {
         const postsList = [];
-        snapshot.forEach(doc => postsList.push({ id: doc.id, ...doc.data() }));
+        snapshot.forEach(doc => {
+          postsList.push({ id: doc.id, ...doc.data() });
+        });
         setPosts(postsList);
+        setLoading(false); // ✅ Stop loading when data arrives
+      },
+      (error) => {
+        console.error("Error fetching community posts:", error);
+        setLoading(false); // ✅ Stop loading even on error
       }
     );
 
@@ -38,8 +46,24 @@ const CommunityPage = () => {
     };
   }, []);
 
+  // ✅ FIXED: Handles both Firestore Timestamp and JS Date
+  const formatTime = (timestamp) => {
+    if (!timestamp) return 'Just now';
+    
+    // If it's a Firestore Timestamp object
+    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    return 'Just now';
+  };
+
   // Mock data if no posts in database
-  const communityPosts = posts.length > 0 ? posts : [
+  const mockPosts = [
     {
       id: 1,
       user: {
@@ -62,7 +86,7 @@ const CommunityPage = () => {
         role: "Interior Designer"
       },
       content: "Transformed this 2BHK apartment with minimalist design and smart storage solutions. The clients are thrilled with the results!",
-      image: "/image.png",
+      image: "/image-1.png",
       timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
       likes: 42,
       comments: 12,
@@ -83,22 +107,11 @@ const CommunityPage = () => {
     }
   ];
 
+  // Use real posts or fallback
+  const displayPosts = posts.length > 0 ? posts : mockPosts;
   const filteredPosts = activeFilter === 'all' 
-    ? communityPosts 
-    : communityPosts.filter(post => post.category === activeFilter);
-
-  // ✅ FIXED: Handles both Firestore Timestamp and JS Date
-  const formatTime = (timestamp) => {
-    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-    const now = new Date();
-    const diff = now - date;
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    return 'Just now';
-  };
+    ? displayPosts 
+    : displayPosts.filter(post => post.category === activeFilter);
 
   return (
     <Container>
@@ -145,51 +158,63 @@ const CommunityPage = () => {
 
       <Content>
         <PostsGrid>
-          {filteredPosts.map((post) => (
-            <PostCard key={post.id}>
-              <PostHeader>
-                <UserInfo>
-                  <UserAvatar src={post.user.avatar} alt={post.user.name} />
-                  <div>
-                    <UserName>{post.user.name}</UserName>
-                    <UserRole>{post.user.role}</UserRole>
-                  </div>
-                </UserInfo>
-                <PostTime>{formatTime(post.timestamp)}</PostTime>
-              </PostHeader>
+          {loading ? (
+            // ✅ Loading State
+            <LoadingCard>
+              <p>Loading community posts...</p>
+            </LoadingCard>
+          ) : filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+              <PostCard key={post.id}>
+                <PostHeader>
+                  <UserInfo>
+                    <UserAvatar src={post.user.avatar} alt={post.user.name} />
+                    <div>
+                      <UserName>{post.user.name}</UserName>
+                      <UserRole>{post.user.role}</UserRole>
+                    </div>
+                  </UserInfo>
+                  <PostTime>{formatTime(post.timestamp)}</PostTime>
+                </PostHeader>
 
-              <PostContent>
-                <PostText>{post.content}</PostText>
-                {post.image && (
-                  <PostImage src={post.image} alt="Post content" />
-                )}
-              </PostContent>
+                <PostContent>
+                  <PostText>{post.content}</PostText>
+                  {post.image && (
+                    <PostImage src={post.image} alt="Post content" />
+                  )}
+                </PostContent>
 
-              <PostActions>
-                <ActionButton>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" 
-                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  {post.likes}
-                </ActionButton>
-                <ActionButton>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" 
-                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  {post.comments}
-                </ActionButton>
-                <ActionButton>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" 
-                      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Share
-                </ActionButton>
-              </PostActions>
-            </PostCard>
-          ))}
+                <PostActions>
+                  <ActionButton>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" 
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {post.likes}
+                  </ActionButton>
+                  <ActionButton>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" 
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {post.comments}
+                  </ActionButton>
+                  <ActionButton>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" 
+                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Share
+                  </ActionButton>
+                </PostActions>
+              </PostCard>
+            ))
+          ) : (
+            // ✅ No Posts Found
+            <NoPostsCard>
+              <p>No posts found. Be the first to share something!</p>
+            </NoPostsCard>
+          )}
         </PostsGrid>
 
         <Sidebar>
@@ -242,7 +267,8 @@ const CommunityPage = () => {
   );
 };
 
-// Styled Components
+// --- STYLED COMPONENTS ---
+
 const Container = styled.div`
   background: #f8f9fa;
   min-height: 100vh;
@@ -314,6 +340,8 @@ const FilterButton = styled.button`
   &:hover {
     background: ${props => props.active ? '#000' : '#f9f9f9'};
     border-color: ${props => props.active ? '#000' : '#d0d0d0'};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
   }
 `;
 
@@ -338,11 +366,12 @@ const PostCard = styled.div`
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 24px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   }
 `;
 
@@ -364,6 +393,7 @@ const UserAvatar = styled.img`
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid #f0f0f0;
 `;
 
 const UserName = styled.div`
@@ -388,15 +418,17 @@ const PostContent = styled.div`
 
 const PostText = styled.p`
   font-size: 15px;
-  line-height: 1.5;
   color: #444;
+  line-height: 1.5;
   margin: 0 0 16px 0;
 `;
 
 const PostImage = styled.img`
   width: 100%;
-  border-radius: 12px;
+  height: 200px;
   object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 `;
 
 const PostActions = styled.div`
@@ -418,7 +450,7 @@ const ActionButton = styled.button`
   padding: 8px 12px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: #f5f5f5;
     color: #333;
@@ -503,6 +535,40 @@ const ContributorPoints = styled.div`
   font-size: 12px;
   font-weight: 600;
   color: #000;
+`;
+
+// --- NEW STYLED COMPONENTS FOR LOADING & NO POSTS ---
+
+const LoadingCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 40px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+
+  p {
+    margin: 0;
+    color: #777;
+    font-size: 16px;
+    font-weight: 500;
+  }
+`;
+
+const NoPostsCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 40px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+
+  p {
+    margin: 0;
+    color: #777;
+    font-size: 16px;
+    font-weight: 500;
+  }
 `;
 
 export default CommunityPage;
