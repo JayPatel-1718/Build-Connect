@@ -120,7 +120,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Smart Building Installation',
-        image: '/modern office.png',
+        image: '/smart building installation.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Complete electrical system for 20-story commercial building.',
@@ -131,7 +131,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Complex Wiring',
-        image: '/image-2.png',
+        image: '/industrial complex wiring.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Electrical infrastructure for 50,000 sq ft industrial complex.',
@@ -142,7 +142,7 @@ const mockProfiles = {
       },
       {
         title: 'Smart Home Automation',
-        image: '/image-1.png',
+        image: '/smart home automation.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Complete home automation system.',
@@ -153,7 +153,7 @@ const mockProfiles = {
       },
       {
         title: 'Solar Power Integration',
-        image: '/image-2.png',
+        image: '/solar power integration.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Solar panels with battery backup for residential complex.',
@@ -164,7 +164,7 @@ const mockProfiles = {
       },
       {
         title: 'Data Center Electrical Setup',
-        image: '/image.png',
+        image: '/public/data center electrical setup.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Redundant power supply for Tier-3 data center.',
