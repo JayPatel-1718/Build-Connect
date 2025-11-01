@@ -519,7 +519,7 @@ const mockProfiles = {
       },
       {
         title: 'Educational Institution',
-        image: '/DhaaraLabs.png',
+        image: '/educational institution.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'University campus with 15 buildings and student housing.',
