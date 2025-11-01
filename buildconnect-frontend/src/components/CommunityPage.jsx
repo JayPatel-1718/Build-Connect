@@ -136,6 +136,7 @@ const CommunityPage = () => {
         role: "Civil Engineer"
       },
       content: "Finalizing structural design for a 35-story residential tower. Wind load analysis is crucial for tall buildings. 🌬️",
+      image:"flat.jpeg",
       timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
       likes: 31,
       comments: 9,
@@ -163,6 +164,7 @@ const CommunityPage = () => {
         role: "Electrical Engineer"
       },
       content: "Designed energy-efficient lighting for a 500-seat auditorium. LED arrays with dimming controls for maximum flexibility. 💡",
+      image:"audi.jpeg",
       timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
       likes: 39,
       comments: 11,
@@ -204,6 +206,7 @@ const CommunityPage = () => {
         role: "Interior Designer"
       },
       content: "Revamped this office space with biophilic design principles. Plants, natural light, and earth tones boost productivity. 🌳",
+      image:"renovation.jpeg",
       timestamp: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000), // 9 days ago
       likes: 38,
       comments: 10,
@@ -231,6 +234,7 @@ const CommunityPage = () => {
         role: "Civil Engineer"
       },
       content: "Analyzing soil samples for a new bridge foundation. Ensuring stability on soft clay. 🧪",
+      image:"soil.jpeg",
       timestamp: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000), // 11 days ago
       likes: 29,
       comments: 7,
@@ -258,6 +262,7 @@ const CommunityPage = () => {
         role: "Electrical Engineer"
       },
       content: "Installing EV charging stations in a residential complex. Future-proofing for electric vehicles. ⚡",
+      image:"ev.jpeg",
       timestamp: new Date(Date.now() - 13 * 24 * 60 * 60 * 1000), // 13 days ago
       likes: 47,
       comments: 13,
@@ -299,6 +304,7 @@ const CommunityPage = () => {
         role: "Interior Designer"
       },
       content: "Curating a gallery wall for a modern loft. Artwork placement is key to visual balance. 🎨",
+      image:"gallery.jpeg",
       timestamp: new Date(Date.now() - 16 * 24 * 60 * 60 * 1000), // 16 days ago
       likes: 36,
       comments: 8,
@@ -326,6 +332,7 @@ const CommunityPage = () => {
         role: "Civil Engineer"
       },
       content: "Calculating load distribution for a stadium roof. Ensuring safety for 50,000 spectators. 🏟️",
+      image:"stadium.jpeg",
       timestamp: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000), // 18 days ago
       likes: 53,
       comments: 17,
@@ -353,6 +360,7 @@ const CommunityPage = () => {
         role: "Electrical Engineer"
       },
       content: "Implementing smart grid technology in a new neighborhood. Balancing supply and demand. ⚙️",
+      image:"grid.jpeg",
       timestamp: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000), // 20 days ago
       likes: 44,
       comments: 12,

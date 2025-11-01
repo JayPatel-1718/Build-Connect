@@ -8,7 +8,7 @@ import HomePage from './components/HomePage';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import ProfilePage from './components/ProfilePage';
 import CommunityPage from './components/CommunityPage';
-
+import ProjectComparison from './components/ProjectComparison'; // Add this line
 
 function App() {
   return (
@@ -20,9 +20,10 @@ function App() {
         <Route path="/onboarding2" element={<OnboardingPage2 />} />
         <Route path="/onboarding3" element={<OnboardingPage3 />} />
         <Route path="/homepage" element={<HomePage />} />
-        <Route path="/dashboard" element={< ProfessionalDashboard/>} />
+        <Route path="/dashboard" element={<ProfessionalDashboard/>} />
         <Route path="/profile/:userId" element={<ProfilePage />} /> 
      <Route path="/community" element={<CommunityPage/>} />
+      <Route path="/compare" element={<ProjectComparison />} /> {/* Add this line */}
       </Routes>
     </BrowserRouter>
   );

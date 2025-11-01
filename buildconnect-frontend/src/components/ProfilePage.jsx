@@ -16,7 +16,6 @@ const fadeIn = keyframes`
     transform: translateY(0);
   }
 `;
-
 const pulse = keyframes`
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -34,7 +33,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
-        image: '/vib.png',
+        image: '/office space.jpg',
         status: 'Currently Working',
         color: '#e74c3c',
         description: 'Modern office design with sustainable materials and open workspaces.',
@@ -45,7 +44,7 @@ const mockProfiles = {
       },
       {
         title: 'Luxury Villa Renovation (Pune)',
-        image: '/luxufry.png',
+        image: '/office 2.png',
         status: 'Completed In 1 Years',
         color: '#2ecc71',
         description: 'Complete renovation of 3BHK villa with modern amenities.',
@@ -56,7 +55,7 @@ const mockProfiles = {
       },
       {
         title: 'Modern Apartment Design',
-        image: '/modern.png',
+        image: '/OIP.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '2BHK apartment with smart home integration.',
@@ -67,7 +66,7 @@ const mockProfiles = {
       },
       {
         title: 'Corporate Office Hub',
-        image: '/hub.png',
+        image: '/Corporate Office Hub.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '20,000 sq ft corporate office space.',
@@ -78,7 +77,7 @@ const mockProfiles = {
       },
       {
         title: 'Minimalist Studio Apartment',
-        image: '/minimalist.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Compact 400 sq ft studio with multi-functional furniture.',
@@ -89,7 +88,7 @@ const mockProfiles = {
       },
       {
         title: 'Restaurant Interior Design',
-        image: '/restauran.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Contemporary restaurant with industrial-chic elements.',
@@ -100,7 +99,7 @@ const mockProfiles = {
       },
       {
         title: 'Retail Storefront Revamp',
-        image: '/rewamp.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Fashion boutique with custom lighting and display units.',
@@ -116,7 +115,7 @@ const mockProfiles = {
     name: 'Aarav Khanna',
     role: 'Electrical Engineer',
     experience: '5+ years in commercial electrical installations.',
-    avatar: '/11.png',
+    avatar: '/aarav-khanna.jpg',
     projects: [
       {
         title: 'Smart Building Installation',
@@ -175,7 +174,7 @@ const mockProfiles = {
       },
       {
         title: 'EV Charging Station Network',
-        image: '/ev charging station network.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Installation of 50 EV charging points across city.',
@@ -186,7 +185,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital Electrical Infrastructure',
-        image: '/hospital electrical infrastructure.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Specialized electrical system for 500-bed hospital.',
@@ -202,11 +201,11 @@ const mockProfiles = {
     name: 'Nikita Desai',
     role: 'Civil Engineer',
     experience: '7+ years in structural design for high-rises.',
-    avatar: '/13.png',
+    avatar: '/nikita-desai.jpg',
     projects: [
       {
         title: 'High-Rise Residential Complex',
-        image: '/high rise residential complex.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Structural design for 35-story residential building.',
@@ -217,7 +216,7 @@ const mockProfiles = {
       },
       {
         title: 'Bridge Construction Project',
-        image: '/bridge construction project.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '600m cable-stayed bridge design.',
@@ -228,7 +227,7 @@ const mockProfiles = {
       },
       {
         title: 'Metro Station Structural Design',
-        image: '/metro station structural design.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Underground metro station with seismic resistance.',
@@ -239,7 +238,7 @@ const mockProfiles = {
       },
       {
         title: 'Dam Rehabilitation Project',
-        image: '/dam rehabilitation project.png',
+        image: '/image-2.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Strengthening of 50-year-old concrete gravity dam.',
@@ -250,7 +249,7 @@ const mockProfiles = {
       },
       {
         title: 'Airport Terminal Expansion',
-        image: '/airport terminal expansion.png',
+        image: '/image.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Structural additions to international airport terminal.',
@@ -261,7 +260,7 @@ const mockProfiles = {
       },
       {
         title: 'Tunnel Boring Machine Shaft',
-        image: '/tunnel boring machine shaft.png',
+        image: '/image-1.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Deep excavation for underground metro tunnel.',
@@ -272,7 +271,7 @@ const mockProfiles = {
       },
       {
         title: 'Seismic Retrofitting Project',
-        image: '/seismic retrofitting project.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Retrofitting of 20 historical buildings for earthquake safety.',
@@ -292,7 +291,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Modern Villa Design',
-        image: '/modernvilla.png',
+        image: '/image-1.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Custom luxury villa with sustainable architecture.',
@@ -303,7 +302,7 @@ const mockProfiles = {
       },
       {
         title: 'Heritage Restoration',
-        image: '/heritage.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Restoration of 200-year-old heritage building.',
@@ -314,7 +313,7 @@ const mockProfiles = {
       },
       {
         title: 'Eco-Friendly Resort',
-        image: '/resort.png',
+        image: '/image.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Sustainable resort with solar integration.',
@@ -325,7 +324,7 @@ const mockProfiles = {
       },
       {
         title: 'Mixed-Use Development',
-        image: '/mixed.png',
+        image: '/image-1.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '15-story building with retail, offices, and apartments.',
@@ -336,7 +335,7 @@ const mockProfiles = {
       },
       {
         title: 'School Campus Design',
-        image: '/schoolcampus.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Green campus for international school with 2,000 students.',
@@ -347,7 +346,7 @@ const mockProfiles = {
       },
       {
         title: 'Urban Housing Complex',
-        image: '/urban.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Affordable housing for 500 families with community spaces.',
@@ -358,7 +357,7 @@ const mockProfiles = {
       },
       {
         title: 'Museum Architecture',
-        image: '/museum.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Contemporary art museum with climate-controlled galleries.',
@@ -374,11 +373,11 @@ const mockProfiles = {
     name: 'Priya Nair',
     role: 'Plumbing Engineer',
     experience: '6+ years in plumbing and water management systems.',
-    avatar: '/12.png',
+    avatar: '/priya-nair.jpg',
     projects: [
       {
         title: 'Water Management System',
-        image: '/water management system.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Complete water management for 500-unit residential complex.',
@@ -389,7 +388,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Wastewater Treatment',
-        image: '/industrial wastewater treatment.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Treatment plant for textile manufacturing facility.',
@@ -400,7 +399,7 @@ const mockProfiles = {
       },
       {
         title: 'Rainwater Harvesting System',
-        image: '/rainwater harvesting system.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Collection and storage system for 10-acre campus.',
@@ -411,7 +410,7 @@ const mockProfiles = {
       },
       {
         title: 'Swimming Pool Plumbing',
-        image: '/swimming pool plumbing.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Heated pool with filtration and chemical dosing system.',
@@ -422,7 +421,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital Sanitation System',
-        image: '/hospital sanitaion system.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Specialized plumbing for infection control in medical facility.',
@@ -433,7 +432,7 @@ const mockProfiles = {
       },
       {
         title: 'Commercial Kitchen Plumbing',
-        image: '/commercial kitchen plumbing.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'High-volume kitchen with grease traps and waste disposal.',
@@ -444,7 +443,7 @@ const mockProfiles = {
       },
       {
         title: 'Greywater Recycling Plant',
-        image: '/greywater recycling plant.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'System to reuse washing machine and shower water.',
@@ -460,11 +459,11 @@ const mockProfiles = {
     name: 'Vikram Singh',
     role: 'Construction Manager',
     experience: '9+ years managing large-scale construction projects.',
-    avatar: '/13.png',
+    avatar: '/vikram-singh.jpg',
     projects: [
       {
         title: 'Shopping Mall Construction',
-        image: '/shopping mall construction.png',
+        image: '/image-2.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '300,000 sq ft shopping mall with parking.',
@@ -475,7 +474,7 @@ const mockProfiles = {
       },
       {
         title: 'Residential Township',
-        image: '/residential township.png',
+        image: '/image.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '5,000-unit gated community with amenities.',
@@ -486,7 +485,7 @@ const mockProfiles = {
       },
       {
         title: 'Hotel & Spa Complex',
-        image: '/hotel and spa complex.png',
+        image: '/image-1.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '5-star hotel with wellness center and conference facilities.',
@@ -497,7 +496,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Warehouse',
-        image: '/industrial warehouse.png',
+        image: '/image-2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Automated warehouse with 200,000 sq ft storage.',
@@ -508,7 +507,7 @@ const mockProfiles = {
       },
       {
         title: 'Sports Stadium Construction',
-        image: '/sports stadium construction.png',
+        image: '/image.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '60,000-seater stadium with retractable roof.',
@@ -519,7 +518,7 @@ const mockProfiles = {
       },
       {
         title: 'Educational Institution',
-        image: '/educational institution.png',
+        image: '/image-1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'University campus with 15 buildings and student housing.',
@@ -530,7 +529,7 @@ const mockProfiles = {
       },
       {
         title: 'Mixed-Use Skyscraper',
-        image: '/mixed use skyscraper.png',
+        image: '/image-2.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '75-story tower with offices, residences, and retail.',
@@ -546,7 +545,7 @@ const mockProfiles = {
     name: 'Meera Patel',
     role: 'Landscape Architect',
     experience: '5+ years in sustainable landscape design.',
-    avatar: '/11.png',
+    avatar: '/meera-patel.jpg',
     projects: [
       {
         title: 'Urban Park Design',
@@ -632,7 +631,7 @@ const mockProfiles = {
     name: 'Arjun Reddy',
     role: 'HVAC Engineer',
     experience: '7+ years in heating and cooling systems.',
-    avatar: '/15.png',
+    avatar: '/arjun-reddy.jpg',
     projects: [
       {
         title: 'Smart HVAC Installation',
@@ -797,7 +796,6 @@ const ProfilePage = () => {
           <SearchBar placeholder="Search projects, professionals, services..." />
           <FilterButton>Filters</FilterButton>
         </LeftSection>
-
         <RightSection>
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -808,7 +806,6 @@ const ProfilePage = () => {
             </svg>
             <RedDot />
           </IconCircle>
-
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
               <g fill="none">
@@ -818,7 +815,6 @@ const ProfilePage = () => {
             </svg>
             <RedDot />
           </IconCircle>
-
           <UserDropdown onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
             <UserAvatar src={displayAvatar} alt="User" />
             <div>
@@ -826,7 +822,6 @@ const ProfilePage = () => {
               <UserEmail>Hello, {displayName}</UserEmail>
             </div>
             <Arrow>▼</Arrow>
-            
             {isDropdownOpen && (
               <DropdownMenu>
                 <DropdownItem onClick={handleSignOut}>Sign Out</DropdownItem>
@@ -854,14 +849,19 @@ const ProfilePage = () => {
             </ProfileInfo>
             <ProfileActions>
               <PortfolioButton>Portfolio</PortfolioButton>
-               <IconCircle>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-              <g fill="none">
-                <path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/>
-                <path fill="currentColor" d="M19 3a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7.333L4 21.5c-.824.618-2 .03-2-1V6a3 3 0 0 1 3-3zm0 2H5a1 1 0 0 0-1 1v13l2.133-1.6a2 2 0 0 1 1.2-.4H19a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1m-8 7a1 1 0 0 1 .117 1.993L11 14H8a1 1 0 0 1-.117-1.993L8 12zm5-4a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/>
-              </g>
-            </svg>
-          </IconCircle>
+              {/* New Compare Button */}
+              <CompareButton onClick={() => navigate('/compare')}>
+                Compare with Other Profiles
+              </CompareButton>
+              {/* Keep the chat icon if needed, or remove it */}
+              <IconCircle>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                  <g fill="none">
+                    <path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/>
+                    <path fill="currentColor" d="M19 3a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7.333L4 21.5c-.824.618-2 .03-2-1V6a3 3 0 0 1 3-3zm0 2H5a1 1 0 0 0-1 1v13l2.133-1.6a2 2 0 0 1 1.2-.4H19a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1m-8 7a1 1 0 0 1 .117 1.993L11 14H8a1 1 0 0 1-.117-1.993L8 12zm5-4a1 1 0 1 1 0 2H8a1 1 0 0 1 0-2z"/>
+                  </g>
+                </svg>
+              </IconCircle>
             </ProfileActions>
           </ProfileHeader>
         </ProfileCard>
@@ -926,7 +926,6 @@ const ProfilePage = () => {
 };
 
 // --- STYLED COMPONENTS WITH ANIMATIONS ---
-
 const Container = styled.div`
   background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
   min-height: 100vh;
@@ -945,7 +944,6 @@ const Header = styled.div`
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   margin: 0 0 20px 0;
   transition: all 0.3s ease;
-
   &:hover {
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
     transform: translateY(-1px);
@@ -957,6 +955,7 @@ const LeftSection = styled.div`
   align-items: center;
   gap: 16px;
 `;
+
 const BackButton = styled.button`
   display: flex;
   align-items: center;
@@ -1005,12 +1004,10 @@ const LogoText = styled.div`
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
-
   strong {
     color: #222;
     letter-spacing: -0.2px;
   }
-
   small {
     font-size: 12px;
     color: #7a7a7a;
@@ -1030,17 +1027,14 @@ const SearchBar = styled.input`
   outline: none;
   transition: all 0.3s ease;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-
   &::placeholder {
     color: #aaa;
   }
-
   &:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     background: white;
   }
-
   &:hover {
     border-color: #b0b0b0;
   }
@@ -1057,7 +1051,6 @@ const FilterButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-
   &:hover {
     background: #ebebeb;
     border-color: #d0d0d0;
@@ -1085,7 +1078,6 @@ const IconCircle = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -1119,7 +1111,6 @@ const UserDropdown = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -1135,7 +1126,6 @@ const UserAvatar = styled.img`
   object-fit: cover;
   border: 2px solid #f0f0f0;
   transition: transform 0.3s ease;
-
   &:hover {
     transform: scale(1.1);
   }
@@ -1185,7 +1175,6 @@ const DropdownMenu = styled.div`
   visibility: hidden;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-
   ${UserDropdown}:hover & {
     opacity: 1;
     visibility: visible;
@@ -1202,7 +1191,6 @@ const DropdownItem = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-
   &:hover {
     background: #f5f5f5;
     color: #222;
@@ -1223,7 +1211,6 @@ const ProfileCard = styled.div`
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
   animation: ${fadeIn} 0.5s ease-out;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
@@ -1251,7 +1238,6 @@ const ProfileAvatar = styled.img`
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   transition: transform 0.3s ease;
   animation: ${fadeIn} 0.7s ease-out;
-
   &:hover {
     transform: scale(1.05);
   }
@@ -1306,11 +1292,32 @@ const PortfolioButton = styled.button`
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
   animation: ${fadeIn} 0.9s ease-out;
-
   &:hover {
     background: linear-gradient(135deg, #0056b3 0%, #004494 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+  }
+`;
+
+// --- NEW: Compare Button Styled Component ---
+const CompareButton = styled.button`
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);  /* Green gradient */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);  /* Green shadow */
+  animation: ${fadeIn} 1s ease-out;
+  margin-bottom: 10px;  /* Add space between buttons */
+
+  &:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);  /* Darker green on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
   }
 `;
 
@@ -1325,7 +1332,6 @@ const ChatButton = styled.button`
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   animation: ${fadeIn} 1s ease-out;
-
   &:hover {
     background: #e0e0e0;
     transform: scale(1.05);
@@ -1356,7 +1362,6 @@ const ProjectCard = styled.div`
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
   animation: ${fadeIn} 0.6s ease-out;
-
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
@@ -1369,7 +1374,6 @@ const ProjectImage = styled.img`
   object-fit: cover;
   transition: transform 0.3s ease;
   animation: ${fadeIn} 0.7s ease-out;
-
   ${ProjectCard}:hover & {
     transform: scale(1.05);
   }
@@ -1457,12 +1461,10 @@ const NoProjectsCard = styled.div`
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
   animation: ${fadeIn} 0.5s ease-out;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   }
-
   p {
     margin: 0;
     color: #777;
@@ -1488,7 +1490,6 @@ const ProfileCardSmall = styled.div`
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
   animation: ${fadeIn} 0.7s ease-out;
-
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
@@ -1504,7 +1505,6 @@ const ProfileAvatarSmall = styled.img`
   border: 2px solid #f0f0f0;
   transition: transform 0.3s ease;
   animation: ${fadeIn} 0.8s ease-out;
-
   ${ProfileCardSmall}:hover & {
     transform: scale(1.1);
   }

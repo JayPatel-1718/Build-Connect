@@ -7,12 +7,12 @@ import { auth, db } from '../firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 // ✅ IMAGES — Place these in public/ folder
-const avatar1 = "/11.png";
-const avatar2 = "/12.png";
-const avatar3 = "/13.png";
+const avatar1 = "/vikram-singh.jpg";
+const avatar2 = "/priya-nair.jpg";
+const avatar3 = "/nikita-desai.jpg";
 const avatarKabir = "/11.png";
-const avatarRahul = "/15.png";
-const avatarJohn = "/13.png";
+const avatarRahul = "/rahul-mehta.png";
+const avatarJohn = "/aarav-khanna.jpg";
 const avatarProgress1 = "/11.png";
 const avatarProgress2 = "/15.png";
 
@@ -40,7 +40,7 @@ const mockRecommendedProjects = [
   },
   {
     id: '2',
-    name: 'John Doe',
+    name: 'Aarav Khanna',
     role: 'Construction Manager',
     avatar: avatarJohn,
     projectImage: '/image-2.png',
@@ -73,7 +73,7 @@ const mockRecommendedProjects = [
     name: 'Vikram Singh',
     role: 'Electrical Engineer',
     avatar: avatar1,
-    projectImage: '/image-2.png',
+    projectImage: '/image-1.png',
     category: 'Electrical Installations',
     status: 'Available',
     chatIcon: false
@@ -109,6 +109,64 @@ const getFallbackProjects = () => [
   }
 ];
 
+// 🧠 CHATBOT SCRIPT
+const chatScript = {
+  start: {
+    message: "Hi! I'm BuildBot. How can I help you today?",
+    options: [
+      { label: "Get a permit", next: "permit" },
+      { label: "Estimate project cost", next: "cost" },
+      { label: "Find professionals", next: "find_pro" },
+      { label: "Ask anything", next: "free" }
+    ]
+  },
+  permit: {
+    message: "Permits depend on your location and project type. Is this for residential or commercial?",
+    options: [
+      { label: "Residential", next: "permit_res" },
+      { label: "Commercial", next: "permit_com" },
+      { label: "Back", next: "start" }
+    ]
+  },
+  permit_res: {
+    message: "For residential renovations, you’ll typically need:\n• Building permit\n• Electrical permit (if wiring changes)\n• Plumbing permit (if pipes moved)\n\nCheck with your local municipal office!",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  permit_com: {
+    message: "Commercial projects require stricter approvals: fire safety, accessibility, zoning, and more. Consult a licensed architect first.",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  cost: {
+    message: "What type of project?",
+    options: [
+      { label: "Bathroom", next: "cost_bath" },
+      { label: "Kitchen", next: "cost_kitchen" },
+      { label: "Full renovation", next: "cost_full" },
+      { label: "Back", next: "start" }
+    ]
+  },
+  cost_bath: {
+    message: "Average bathroom renovation: ₹80,000 – ₹2,50,000 depending on materials and fixtures.",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  cost_kitchen: {
+    message: "Kitchen remodel: ₹1,50,000 – ₹5,00,000+ (modular vs custom).",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  cost_full: {
+    message: "Full home renovation: ₹10–30 lakhs for a 2BHK. Get 3 quotes from verified contractors!",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  find_pro: {
+    message: "We recommend browsing ‘Recommended Projects’ or visiting the Community tab to connect with professionals!",
+    options: [{ label: "Back to menu", next: "start" }]
+  },
+  free: {
+    message: "Go ahead—ask me anything about construction, permits, or design!",
+    input: true // enables free text
+  }
+};
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -129,6 +187,8 @@ const HomePage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState('start');
+  const [awaitingFreeText, setAwaitingFreeText] = useState(false);
 
   // 1. Fetch user auth state and profile
   useEffect(() => {
@@ -148,7 +208,6 @@ const HomePage = () => {
         setUserProfile(null);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -160,7 +219,6 @@ const HomePage = () => {
         setLoadingProjects(false);
         return;
       }
-
       setLoadingProjects(true);
       try {
         const projectsQuery = query(
@@ -180,7 +238,6 @@ const HomePage = () => {
         setLoadingProjects(false);
       }
     };
-
     fetchProjects();
   }, [user]);
 
@@ -190,12 +247,11 @@ const HomePage = () => {
       setLoadingNews(true);
       setNewsError(null);
       try {
-        const API_KEY = "7d53f07fa2ff4613b665ebeb67096b8b"; // 👈 REPLACE THIS
+        const API_KEY = "7d53f07fa2ff4613b665ebeb67096b8b";
         const queryParam = "construction OR interior design OR civil engineering OR architecture";
         const response = await fetch(
           `https://newsapi.org/v2/everything?q=${encodeURIComponent(queryParam)}&sortBy=publishedAt&pageSize=1&apiKey=${API_KEY}`
         );
-
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         const validArticles = data.articles.filter(article => article.urlToImage);
@@ -216,32 +272,60 @@ const HomePage = () => {
         setLoadingNews(false);
       }
     };
-
     fetchNews();
   }, []);
 
-  // --- CHATBOT HANDLER ---
+  // --- CHATBOT HANDLER (free text fallback) ---
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
-
     const userMessage = { text: input, isUser: true };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-
     try {
       const res = await fetch('http://localhost:8080/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: input })
       });
-
       const data = await res.json();
       setMessages(prev => [...prev, { text: data.answer || "No response.", isUser: false }]);
     } catch (err) {
       setMessages(prev => [...prev, { text: "⚠️ Couldn't reach assistant. Is the Java backend running?", isUser: false }]);
     } finally {
       setIsLoading(false);
+      // Return to menu after free query
+      setTimeout(() => {
+        setMessages(prev => [...prev, { text: "Back to main menu?", isUser: false }]);
+        setCurrentStep('start');
+        setAwaitingFreeText(false);
+      }, 800);
+    }
+  };
+
+  const handleQuickReply = (nextStep) => {
+    if (isLoading) return;
+
+    const option = chatScript[currentStep].options.find(opt => opt.next === nextStep);
+    const userMsg = { text: option.label, isUser: true };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const next = chatScript[nextStep];
+      const botMsg = { text: next.message, isUser: false };
+      setMessages(prev => [...prev, botMsg]);
+      setCurrentStep(nextStep);
+      setAwaitingFreeText(!!next.input);
+    }, 400);
+  };
+
+  const handleOpenChat = () => {
+    setIsChatOpen(true);
+    if (messages.length === 0) {
+      const startMsg = { text: chatScript.start.message, isUser: false };
+      setMessages([startMsg]);
+      setCurrentStep('start');
+      setAwaitingFreeText(false);
     }
   };
 
@@ -286,7 +370,6 @@ const HomePage = () => {
           <SearchBar placeholder="Search projects, professionals, services..." />
           <FilterButton>Filters</FilterButton>
         </LeftSection>
-
         <RightSection>
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -297,7 +380,6 @@ const HomePage = () => {
             </svg>
             <RedDot />
           </IconCircle>
-
           <IconCircle>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
               <g fill="none">
@@ -307,7 +389,6 @@ const HomePage = () => {
             </svg>
             <RedDot />
           </IconCircle>
-
           <UserDropdown onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
             <UserAvatar src={displayAvatar} alt="User" />
             <div>
@@ -315,7 +396,6 @@ const HomePage = () => {
               <UserEmail>{displayEmail}</UserEmail>
             </div>
             <Arrow>▼</Arrow>
-            
             {isDropdownOpen && (
               <DropdownMenu>
                 <DropdownItem onClick={handleSignOut}>Sign Out</DropdownItem>
@@ -377,7 +457,7 @@ const HomePage = () => {
 
       {/* RECOMMENDED PROJECTS */}
       <SectionHeader>
-        <SectionTitle>Recommend Projects</SectionTitle>
+        <SectionTitle>Recommended Projects</SectionTitle>
         <FilterButton onClick={() => setShowFilters(!showFilters)}>Filters</FilterButton>
         {showFilters && (
           <FilterDropdown>
@@ -414,6 +494,29 @@ const HomePage = () => {
         ))}
       </ProjectsGrid>
 
+      {/* TIPS & RESOURCES */}
+      <SectionTitle>Tips & Resources</SectionTitle>
+      <TipsGrid>
+        <TipCard>
+          <TipIcon>📘</TipIcon>
+          <TipTitle>Permit Guide</TipTitle>
+          <TipDesc>How to get construction permits in your city—step by step.</TipDesc>
+          <TipTag>Legal</TipTag>
+        </TipCard>
+        <TipCard>
+          <TipIcon>💰</TipIcon>
+          <TipTitle>Budgeting Template</TipTitle>
+          <TipDesc>Track costs with our free downloadable Excel sheet.</TipDesc>
+          <TipTag>Finance</TipTag>
+        </TipCard>
+        <TipCard>
+          <TipIcon>🛠️</TipIcon>
+          <TipTitle>Tool Checklist</TipTitle>
+          <TipDesc>Essential tools for every renovation project.</TipDesc>
+          <TipTag>Planning</TipTag>
+        </TipCard>
+      </TipsGrid>
+
       {/* YOUR PROJECTS */}
       <SectionTitle>Your Projects</SectionTitle>
       <ProgressGrid>
@@ -429,7 +532,7 @@ const HomePage = () => {
                 />
                 <ProgressInfo>
                   <ProgressTitle>{project.title}</ProgressTitle>
-                  <ProgressCost>Cost : {project.cost}</ProgressCost>
+                  <ProgressCost>Cost: {project.cost}</ProgressCost>
                   <ProgressBar>
                     <ProgressFill style={{ width: `${project.progress}%` }} />
                     <ProgressText>Progress {project.progress}%</ProgressText>
@@ -475,7 +578,7 @@ const HomePage = () => {
       </ProgressGrid>
 
       {/* 💬 CHATBOT BUTTON */}
-      <ChatbotButton onClick={() => setIsChatOpen(true)}>
+      <ChatbotButton onClick={handleOpenChat}>
         💬
       </ChatbotButton>
 
@@ -494,18 +597,29 @@ const HomePage = () => {
             ))}
             {isLoading && <Message isUser={false}>Thinking...</Message>}
           </ChatbotMessages>
-          <ChatbotInput>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about construction, materials, codes..."
-              disabled={isLoading}
-            />
-            <button onClick={handleSend} disabled={isLoading || !input.trim()}>
-              Send
-            </button>
-          </ChatbotInput>
+
+          {!awaitingFreeText && chatScript[currentStep]?.options ? (
+            <QuickReplies>
+              {chatScript[currentStep].options.map((opt, i) => (
+                <QuickButton key={i} onClick={() => handleQuickReply(opt.next)}>
+                  {opt.label}
+                </QuickButton>
+              ))}
+            </QuickReplies>
+          ) : (
+            <ChatbotInput>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Type your message..."
+                disabled={isLoading}
+              />
+              <button onClick={handleSend} disabled={isLoading || !input.trim()}>
+                Send
+              </button>
+            </ChatbotInput>
+          )}
         </ChatbotModal>
       )}
     </Container>
@@ -514,120 +628,8 @@ const HomePage = () => {
 
 // --- STYLED COMPONENTS ---
 
-// --- (Keep all your existing styled components) ---
-
-// --- NEW NEWS STYLED COMPONENTS ---
-
-const NewsSection = styled.div`
-  flex: 1; /* Take remaining space */
-  min-width: 300px; /* Minimum width for responsiveness */
-  margin-left: 20px; /* Space between community card and news */
-`;
-
-const NewsGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const NewsCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  }
-`;
-
-const NewsImage = styled.img`
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-bottom: 1px solid #f0f0f0;
-`;
-
-const NewsContent = styled.div`
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-`;
-
-const NewsSource = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #007bff;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-`;
-
-const NewsTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-  flex-grow: 1; /* Pushes description down */
-`;
-
-const NewsDesc = styled.p`
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
-  margin: 0 0 12px 0;
-`;
-
-const NewsTime = styled.div`
-  font-size: 11px;
-  color: #999;
-  font-weight: 500;
-  margin-top: auto; /* Pushes to bottom */
-`;
-
-const NewsLoadingCard = styled.div`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 30px;
-  text-align: center;
-  border: 1px solid #eee;
-
-  p {
-    margin: 0;
-    color: #777;
-    font-size: 16px;
-  }
-`;
-
-const NewsErrorCard = styled.div`
-  background: #ffecec;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  padding: 20px;
-  text-align: center;
-  border: 1px solid #fcc;
-  color: #c33;
-
-  p {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-  }
-`;
-
-// --- (Keep all other styled components below) ---
-
 const Container = styled.div`
-  background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+  background: linear-gradient(135deg, #fdf9fb 0%, #f8f4f6 100%);
   min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   padding: 18px 0 0 0;
@@ -643,7 +645,6 @@ const Header = styled.div`
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   margin: 0 0 20px 0;
   transition: all 0.3s ease;
-
   &:hover {
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
     transform: translateY(-1px);
@@ -685,12 +686,10 @@ const LogoText = styled.div`
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
-
   strong {
     color: #222;
     letter-spacing: -0.2px;
   }
-
   small {
     font-size: 12px;
     color: #7a7a7a;
@@ -710,17 +709,14 @@ const SearchBar = styled.input`
   outline: none;
   transition: all 0.3s ease;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-
   &::placeholder {
     color: #aaa;
   }
-
   &:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
     background: white;
   }
-
   &:hover {
     border-color: #b0b0b0;
   }
@@ -737,7 +733,6 @@ const FilterButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-
   &:hover {
     background: #ebebeb;
     border-color: #d0d0d0;
@@ -759,7 +754,6 @@ const IconCircle = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -792,7 +786,6 @@ const UserDropdown = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -853,7 +846,6 @@ const DropdownMenu = styled.div`
   visibility: hidden;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-
   ${UserDropdown}:hover & {
     opacity: 1;
     visibility: visible;
@@ -870,7 +862,6 @@ const DropdownItem = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-
   &:hover {
     background: #f5f5f5;
     color: #222;
@@ -897,7 +888,6 @@ const CommunityCard = styled.div`
   position: relative;
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
@@ -911,7 +901,6 @@ const CommunityTitle = styled.div`
   color: #1e1e1e;
   text-align: left;
   letter-spacing: -0.5px;
-
   span { 
     font-size: 32px; 
     letter-spacing: 0px; 
@@ -952,17 +941,11 @@ const ExploreButton = styled.button`
   box-shadow: 0 4px 12px rgba(0,0,0,0.11);
   cursor: pointer;
   transition: all 0.3s ease;
-
   &:hover {
     background: linear-gradient(135deg, #232323 0%, #444 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   }
-`;
-
-const Avatars = styled.div`
-  display: flex;
-  margin-top: 6px;
 `;
 
 const Avatar = styled.div`
@@ -989,7 +972,7 @@ const SectionHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin: 32px 0 16px 12px;
-  position: relative; /* For dropdown positioning */
+  position: relative;
 `;
 
 const SectionTitle = styled.h2`
@@ -1019,9 +1002,111 @@ const FilterItem = styled.div`
   color: #555;
   cursor: pointer;
   transition: background 0.2s;
-
   &:hover {
     background: #f5f5f5;
+  }
+`;
+
+const NewsSection = styled.div`
+  flex: 1;
+  min-width: 300px;
+  margin-left: 20px;
+`;
+
+const NewsGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const NewsCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const NewsImage = styled.img`
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-bottom: 1px solid #f0f0f0;
+`;
+
+const NewsContent = styled.div`
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+`;
+
+const NewsSource = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #007bff;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+`;
+
+const NewsTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+  flex-grow: 1;
+`;
+
+const NewsDesc = styled.p`
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+`;
+
+const NewsTime = styled.div`
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  margin-top: auto;
+`;
+
+const NewsLoadingCard = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  text-align: center;
+  border: 1px solid #eee;
+  p {
+    margin: 0;
+    color: #777;
+    font-size: 16px;
+  }
+`;
+
+const NewsErrorCard = styled.div`
+  background: #ffecec;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid #fcc;
+  color: #c33;
+  p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
   }
 `;
 
@@ -1039,7 +1124,6 @@ const ProjectCard = styled.div`
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
@@ -1083,7 +1167,6 @@ const ChatIcon = styled.div`
   cursor: pointer;
   transition: background 0.3s ease;
   border: 1px solid #e0e0e0;
-
   &:hover {
     background: #e0e0e0;
     transform: scale(1.05);
@@ -1095,7 +1178,6 @@ const ProjectImage = styled.img`
   height: 220px;
   object-fit: cover;
   transition: transform 0.3s ease;
-
   ${ProjectCard}:hover & {
     transform: scale(1.02);
   }
@@ -1110,7 +1192,6 @@ const CategoryLabel = styled.div`
   color: #333;
   border-top: 1px solid #eee;
   transition: background 0.3s ease;
-
   ${ProjectCard}:hover & {
     background: #e8e8e8;
   }
@@ -1134,7 +1215,6 @@ const ProgressCard = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
@@ -1148,7 +1228,6 @@ const ProgressImage = styled.img`
   object-fit: cover;
   border: 2px solid #f0f0f0;
   transition: all 0.3s ease;
-
   ${ProgressCard}:hover & {
     border-color: #007bff;
     transform: scale(1.05);
@@ -1212,7 +1291,6 @@ const BrowseMoreCard = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid #f0f0f0;
-
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0,0,0,0.15);
@@ -1229,7 +1307,6 @@ const PlusIcon = styled.div`
   justify-content: center;
   margin-bottom: 12px;
   transition: all 0.3s ease;
-
   &:hover {
     border-color: #222;
     transform: scale(1.05);
@@ -1241,7 +1318,6 @@ const BrowseText = styled.div`
   font-weight: 600;
   color: #333;
   transition: color 0.3s ease;
-
   &:hover {
     color: #000;
   }
@@ -1260,12 +1336,10 @@ const NoProjectsCard = styled.div`
   text-align: center;
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   }
-
   p {
     margin-top: 14px;
     color: #777;
@@ -1283,7 +1357,6 @@ const TaskListCard = styled.div`
   grid-column: 1 / -1;
   border: 1px solid #e8e8e8;
   transition: all 0.3s ease;
-
   &:hover {
     box-shadow: inset 0 2px 12px rgba(0,0,0,0.08);
   }
@@ -1304,7 +1377,6 @@ const TaskItem = styled.div`
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
   transition: background 0.2s ease;
-
   &:hover {
     background: #f5f5f5;
     border-radius: 8px;
@@ -1446,6 +1518,111 @@ const ChatbotInput = styled.div`
     &:disabled {
       opacity: 0.5;
     }
+  }
+`;
+
+// --- ENHANCED TIPS & RESOURCES STYLING ---
+const TipsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 12px;
+`;
+
+const TipCard = styled.div`
+  background: white;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 6px 16px rgba(183, 20, 80, 0.06);
+  border: 1px solid #f8f0f4;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #B71450, #FF6B9D);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(183, 20, 80, 0.12);
+    border-color: #ffd1dc;
+    &:before {
+      opacity: 1;
+    }
+  }
+`;
+
+const TipIcon = styled.div`
+  font-size: 28px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #fff0f5, #ffe6ee);
+  border-radius: 14px;
+  color: #B71450;
+  box-shadow: inset 0 0 0 1px #ffd1dc;
+`;
+
+const TipTitle = styled.div`
+  font-weight: 700;
+  font-size: 17px;
+  color: #222;
+  margin-bottom: 10px;
+  line-height: 1.3;
+`;
+
+const TipDesc = styled.div`
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  font-weight: 400;
+`;
+
+const TipTag = styled.span`
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #B71450;
+  background: #fff0f5;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-top: 12px;
+  letter-spacing: 0.5px;
+`;
+
+// --- CHATBOT QUICK REPLIES ---
+const QuickReplies = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #eee;
+  background: #fafafa;
+`;
+
+const QuickButton = styled.button`
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    background: #e0e0e0;
+    border-color: #B71450;
+    color: #B71450;
   }
 `;
 
