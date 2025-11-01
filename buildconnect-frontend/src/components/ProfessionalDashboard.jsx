@@ -1,18 +1,49 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db /* , storage */ } from '../firebase';
+import { auth, db } from '../firebase';
 import { useNavigate } from 'react-router-dom';
-// import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'; // Uncomment when ready
-import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, limit, orderBy } from 'firebase/firestore';
 
-// ✅ IMAGES — Place these in public/ folder
+// ✅ IMAGES
 const avatar1 = "/11.png";
-const service1 = "/service-interior.jpg";  // Replace with real images
+const service1 = "/service-interior.jpg";
 const service2 = "/service-foundation.jpg";
 const service3 = "/service-renovation.jpg";
 const project1 = "/project-livingroom.jpg";
 const project2 = "/project-bathroom.jpg";
+
+// 🚀 CACHE MANAGER
+const CacheManager = {
+  cache: new Map(),
+  timestamps: new Map(),
+  TTL: 5 * 60 * 1000, // 5 minutes
+
+  set(key, value) {
+    this.cache.set(key, value);
+    this.timestamps.set(key, Date.now());
+  },
+
+  get(key) {
+    const timestamp = this.timestamps.get(key);
+    if (!timestamp || Date.now() - timestamp > this.TTL) {
+      this.cache.delete(key);
+      this.timestamps.delete(key);
+      return null;
+    }
+    return this.cache.get(key);
+  },
+
+  invalidate(key) {
+    this.cache.delete(key);
+    this.timestamps.delete(key);
+  },
+
+  clear() {
+    this.cache.clear();
+    this.timestamps.clear();
+  }
+};
 
 const ProfessionalDashboard = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -21,10 +52,27 @@ const ProfessionalDashboard = () => {
   const [services, setServices] = useState([]);
   const [projects, setProjects] = useState([]);
   const [expandedProjectId, setExpandedProjectId] = useState(null);
-const navigate = useNavigate();
-  // 👇 MODAL STATE
+  const [isLoading, setIsLoading] = useState(true);
+  const [servicesPage, setServicesPage] = useState(1);
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [hasMoreServices, setHasMoreServices] = useState(true);
+  const [hasMoreProjects, setHasMoreProjects] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const navigate = useNavigate();
+  
+  const ITEMS_PER_PAGE = 6;
+
+  // 🚀 TOAST NOTIFICATION HELPER
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
+
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'service' or 'project'
+  const [modalType, setModalType] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     experience: '',
@@ -34,117 +82,162 @@ const navigate = useNavigate();
   });
   const fileInputRef = useRef(null);
 
+  // 🚀 OPTIMIZED DATA FETCHING WITH CACHE
+  const fetchUserData = async (currentUser) => {
+    const cacheKey = `user_${currentUser.uid}`;
+    const cached = CacheManager.get(cacheKey);
+    if (cached) return cached;
+
+    const [userDocResult, servicesResult, projectsResult] = await Promise.allSettled([
+      getDoc(doc(db, 'users', currentUser.uid)),
+      getDocs(
+        query(
+          collection(db, 'services'),
+          where('userId', '==', currentUser.uid),
+          orderBy('createdAt', 'desc'),
+          limit(ITEMS_PER_PAGE)
+        )
+      ),
+      getDocs(
+        query(
+          collection(db, 'projects'),
+          where('userId', '==', currentUser.uid),
+          orderBy('createdAt', 'desc'),
+          limit(ITEMS_PER_PAGE)
+        )
+      )
+    ]);
+
+    const data = {
+      profile: userDocResult.status === 'fulfilled' && userDocResult.value.exists() 
+        ? userDocResult.value.data() 
+        : null,
+      services: servicesResult.status === 'fulfilled' 
+        ? servicesResult.value.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        : [],
+      projects: projectsResult.status === 'fulfilled'
+        ? projectsResult.value.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        : []
+    };
+
+    CacheManager.set(cacheKey, data);
+    return data;
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setIsLoading(true);
+      
       if (currentUser) {
         setUser(currentUser);
+        
         try {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            setUserProfile(userDoc.data());
-          }
+          const data = await fetchUserData(currentUser);
+          
+          setUserProfile(data.profile);
+          setServices(data.services.length > 0 ? data.services : getDefaultServices());
+          setProjects(data.projects.length > 0 ? data.projects : getDefaultProjects());
+          setHasMoreServices(data.services.length === ITEMS_PER_PAGE);
+          setHasMoreProjects(data.projects.length === ITEMS_PER_PAGE);
         } catch (error) {
-          console.error('Error fetching user profile:', error);
-        }
-
-        // Fetch Services
-        try {
-          const servicesQuery = query(
-            collection(db, 'services'),
-            where('userId', '==', currentUser.uid)
-          );
-          const servicesSnapshot = await getDocs(servicesQuery);
-          const servicesList = [];
-          servicesSnapshot.forEach((doc) => {
-            servicesList.push({ id: doc.id, ...doc.data() });
-          });
-          setServices(servicesList);
-        } catch (error) {
-          console.error('Error fetching services:', error);
-          setServices([
-            { id: '1', title: "Interior Design Services", image: service1 },
-            { id: '2', title: "Foundation Services", image: service2 },
-            { id: '3', title: "Renovation and Remodeling", image: service3 },
-          ]);
-        }
-
-        // Fetch Projects
-        try {
-          const projectsQuery = query(
-            collection(db, 'projects'),
-            where('userId', '==', currentUser.uid)
-          );
-          const projectsSnapshot = await getDocs(projectsQuery);
-          const projectsList = [];
-          projectsSnapshot.forEach((doc) => {
-            projectsList.push({ id: doc.id, ...doc.data() });
-          });
-          setProjects(projectsList);
-        } catch (error) {
-          console.error('Error fetching projects:', error);
-          setProjects([
-            {
-              id: '1',
-              title: "Renovation & Remodelling",
-              cost: "$1,25,000",
-              progress: 80,
-              tasks: [
-                { name: "Demolition", status: "completed", date: "Oct 5" },
-                { name: "Wall Painting", status: "completed", date: "Oct 20" },
-                { name: "Flooring", status: "in-progress", date: "Oct 25" },
-              ]
-            },
-            {
-              id: '2',
-              title: "Bathroom Renovation",
-              cost: "$1,000",
-              progress: 45,
-              tasks: [
-                { name: "Tile Removal", status: "completed", date: "Oct 8" },
-                { name: "New Tiling", status: "in-progress", date: "Oct 20" },
-              ]
-            }
-          ]);
+          console.error('Error fetching data:', error);
+          setServices(getDefaultServices());
+          setProjects(getDefaultProjects());
         }
       } else {
         setUser(null);
         setUserProfile(null);
-        setServices([
-          { id: '1', title: "Interior Design Services", image: service1 },
-          { id: '2', title: "Foundation Services", image: service2 },
-          { id: '3', title: "Renovation and Remodeling", image: service3 },
-        ]);
-        setProjects([
-          {
-            id: '1',
-            title: "Renovation & Remodelling",
-            cost: "$1,25,000",
-            progress: 80,
-            tasks: [
-              { name: "Demolition", status: "completed", date: "Oct 5" },
-              { name: "Wall Painting", status: "completed", date: "Oct 20" },
-            ]
-          },
-          {
-            id: '2',
-            title: "Bathroom Renovation",
-            cost: "$1,000",
-            progress: 45,
-            tasks: [
-              { name: "Tile Removal", status: "completed", date: "Oct 8" },
-              { name: "New Tiling", status: "in-progress", date: "Oct 20" },
-            ]
-          }
-        ]);
+        setServices(getDefaultServices());
+        setProjects(getDefaultProjects());
+        CacheManager.clear();
       }
+      
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  // 🚀 LOAD MORE FUNCTIONALITY
+  const loadMoreServices = async () => {
+    if (!user || !hasMoreServices) return;
+
+    try {
+      const lastService = services[services.length - 1];
+      const moreServices = await getDocs(
+        query(
+          collection(db, 'services'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc'),
+          limit(ITEMS_PER_PAGE)
+        )
+      );
+
+      const newServices = moreServices.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setServices(prev => [...prev, ...newServices]);
+      setHasMoreServices(newServices.length === ITEMS_PER_PAGE);
+      setServicesPage(prev => prev + 1);
+    } catch (error) {
+      console.error('Error loading more services:', error);
+    }
+  };
+
+  const loadMoreProjects = async () => {
+    if (!user || !hasMoreProjects) return;
+
+    try {
+      const moreProjects = await getDocs(
+        query(
+          collection(db, 'projects'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc'),
+          limit(ITEMS_PER_PAGE)
+        )
+      );
+
+      const newProjects = moreProjects.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProjects(prev => [...prev, ...newProjects]);
+      setHasMoreProjects(newProjects.length === ITEMS_PER_PAGE);
+      setProjectsPage(prev => prev + 1);
+    } catch (error) {
+      console.error('Error loading more projects:', error);
+    }
+  };
+
+  const getDefaultServices = () => [
+    { id: '1', title: "Interior Design Services", image: service1 },
+    { id: '2', title: "Foundation Services", image: service2 },
+    { id: '3', title: "Renovation and Remodeling", image: service3 },
+  ];
+
+  const getDefaultProjects = () => [
+    {
+      id: '1',
+      title: "Renovation & Remodelling",
+      cost: "$1,25,000",
+      progress: 80,
+      tasks: [
+        { name: "Demolition", status: "completed", date: "Oct 5" },
+        { name: "Wall Painting", status: "completed", date: "Oct 20" },
+        { name: "Flooring", status: "in-progress", date: "Oct 25" },
+      ]
+    },
+    {
+      id: '2',
+      title: "Bathroom Renovation",
+      cost: "$1,000",
+      progress: 45,
+      tasks: [
+        { name: "Tile Removal", status: "completed", date: "Oct 8" },
+        { name: "New Tiling", status: "in-progress", date: "Oct 20" },
+      ]
+    }
+  ];
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      CacheManager.clear();
     } catch (error) {
       console.error('Sign out error:', error);
     }
@@ -158,7 +251,6 @@ const navigate = useNavigate();
     setExpandedProjectId(expandedProjectId === projectId ? null : projectId);
   };
 
-  // 👇 OPEN MODAL
   const openServiceModal = () => {
     setModalType('service');
     setFormData({ name: '', experience: '', cost: '', image: null, imageUrl: '' });
@@ -177,7 +269,6 @@ const navigate = useNavigate();
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // 👇 HANDLE IMAGE UPLOAD (Preview Only)
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -190,7 +281,6 @@ const navigate = useNavigate();
     }
   };
 
-  // 👇 SUBMIT FORM
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -208,20 +298,11 @@ const navigate = useNavigate();
       return;
     }
 
-    // 👇 IMAGE UPLOAD TO FIREBASE STORAGE (COMMENTED FOR SAFETY)
-    // let imageUrl = '';
-    // if (formData.image) {
-    //   try {
-    //     const imageRef = storageRef(storage, `services/${Date.now()}_${formData.image.name}`);
-    //     await uploadBytes(imageRef, formData.image);
-    //     imageUrl = await getDownloadURL(imageRef);
-    //   } catch (error) {
-    //     console.error('Image upload error:', error);
-    //     alert('Image upload failed. Using placeholder.');
-    //   }
-    // }
-
+    // 🚀 GENERATE TEMPORARY ID FOR INSTANT UI UPDATE
+    const tempId = `temp_${Date.now()}`;
+    
     const newEntry = {
+      id: tempId,
       userId: user.uid,
       title: formData.name,
       ...(modalType === 'service' && { experience: formData.experience }),
@@ -234,66 +315,210 @@ const navigate = useNavigate();
       createdAt: new Date().toISOString(),
     };
 
+    // 🚀 INSTANT UI UPDATE (Optimistic)
+    if (modalType === 'service') {
+      setServices(prev => [newEntry, ...prev]);
+    } else {
+      setProjects(prev => [newEntry, ...prev]);
+    }
+
+    // Close modal immediately for instant feel
+    closeModal();
+    showToast(`${modalType === 'service' ? 'Service' : 'Project'} added successfully!`);
+
+    // 🚀 BACKGROUND SYNC TO FIRESTORE
     try {
-      // 👇 ADD TO FIRESTORE
-      const docRef = await addDoc(collection(db, modalType === 'service' ? 'services' : 'projects'), newEntry);
+      const { id, ...dataToSave } = newEntry; // Remove temp ID
+      const docRef = await addDoc(collection(db, modalType === 'service' ? 'services' : 'projects'), dataToSave);
       
-      // 👇 UPDATE LOCAL STATE
+      // Replace temp ID with real Firestore ID
       if (modalType === 'service') {
-        setServices(prev => [...prev, { id: docRef.id, ...newEntry }]);
+        setServices(prev => prev.map(item => 
+          item.id === tempId ? { ...item, id: docRef.id } : item
+        ));
       } else {
-        setProjects(prev => [...prev, { id: docRef.id, ...newEntry }]);
+        setProjects(prev => prev.map(item => 
+          item.id === tempId ? { ...item, id: docRef.id } : item
+        ));
       }
 
-      alert(`${modalType === 'service' ? 'Service' : 'Project'} added successfully!`);
-      closeModal();
+      // Invalidate cache for next visit
+      CacheManager.invalidate(`user_${user.uid}`);
+      
     } catch (error) {
       console.error('Error saving to Firestore:', error);
-      alert('Failed to save. Please try again.');
+      
+      // 🚀 ROLLBACK ON ERROR - Remove the optimistically added item
+      if (modalType === 'service') {
+        setServices(prev => prev.filter(item => item.id !== tempId));
+      } else {
+        setProjects(prev => prev.filter(item => item.id !== tempId));
+      }
+      
+      showToast('Failed to save. Please try again.', 'error');
     }
   };
 
   const handleEditService = (serviceId) => {
     alert(`Editing service ${serviceId}`);
-    // 👇 Later: navigate(`/edit-service/${serviceId}`)
   };
 
   const handleDeleteService = async (serviceId) => {
     if (window.confirm("Are you sure you want to delete this service?")) {
+      // 🚀 INSTANT UI UPDATE - Remove immediately
+      const deletedService = services.find(s => s.id === serviceId);
+      setServices(prev => prev.filter(s => s.id !== serviceId));
+      showToast('Service deleted successfully!');
+      
+      // 🚀 BACKGROUND SYNC TO FIRESTORE
       try {
         await deleteDoc(doc(db, 'services', serviceId));
-        setServices(prev => prev.filter(s => s.id !== serviceId));
+        CacheManager.invalidate(`user_${user.uid}`);
       } catch (error) {
         console.error('Error deleting service:', error);
-        alert('Failed to delete service.');
+        
+        // 🚀 ROLLBACK ON ERROR - Restore the deleted item
+        if (deletedService) {
+          setServices(prev => [deletedService, ...prev]);
+        }
+        showToast('Failed to delete service. Please try again.', 'error');
       }
     }
   };
 
   const handleEditProject = (projectId) => {
     alert(`Editing project ${projectId}`);
-    // 👇 Later: navigate(`/edit-project/${projectId}`)
   };
 
   const handleDeleteProject = async (projectId) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
+      // 🚀 INSTANT UI UPDATE - Remove immediately
+      const deletedProject = projects.find(p => p.id === projectId);
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      showToast('Project deleted successfully!');
+      
+      // 🚀 BACKGROUND SYNC TO FIRESTORE
       try {
         await deleteDoc(doc(db, 'projects', projectId));
-        setProjects(prev => prev.filter(p => p.id !== projectId));
+        CacheManager.invalidate(`user_${user.uid}`);
       } catch (error) {
         console.error('Error deleting project:', error);
-        alert('Failed to delete project.');
+        
+        // 🚀 ROLLBACK ON ERROR - Restore the deleted item
+        if (deletedProject) {
+          setProjects(prev => [deletedProject, ...prev]);
+        }
+        showToast('Failed to delete project. Please try again.', 'error');
       }
     }
   };
 
+  // 🚀 MEMOIZED COMPONENTS FOR BETTER PERFORMANCE
+  const ServicesList = useMemo(() => (
+    <>
+      {services.map((service) => (
+        <ServiceCard key={service.id}>
+          <ServiceImageWrapper>
+            <ServiceImage src={service.image} alt={service.title} loading="lazy" />
+            <ServiceActions>
+              <EditIcon onClick={() => handleEditService(service.id)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M11 4H4v17h17v-7" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 4-6-6 4-4L18.5 2.5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </EditIcon>
+              <DeleteIcon onClick={() => handleDeleteService(service.id)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m6 8v6m2-6v6" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </DeleteIcon>
+            </ServiceActions>
+            {service.id.startsWith('temp_') && <SyncingBadge>Syncing...</SyncingBadge>}
+          </ServiceImageWrapper>
+          <ServiceTitle>{service.title}</ServiceTitle>
+        </ServiceCard>
+      ))}
+      <AddServiceCard onClick={openServiceModal}>
+        <PlusIcon>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </PlusIcon>
+        <AddServiceText>Add New Service</AddServiceText>
+      </AddServiceCard>
+    </>
+  ), [services]);
+
+  const ProjectsList = useMemo(() => (
+    <>
+      {projects.map((project) => (
+        <React.Fragment key={project.id}>
+          <ProgressCard onClick={() => toggleProjectDetails(project.id)}>
+            <ProgressImage src={project.id === '1' ? project1 : project2} alt="Project" loading="lazy" />
+            <ProgressInfo>
+              <ProgressTitle>
+                {project.title}
+                {project.id.startsWith('temp_') && <SyncingBadgeInline>Syncing...</SyncingBadgeInline>}
+              </ProgressTitle>
+              <ProgressCost>Cost : {project.cost}</ProgressCost>
+              <ProgressBar>
+                <ProgressFill style={{ width: `${project.progress}%` }} />
+                <ProgressText>Progress {project.progress}%</ProgressText>
+              </ProgressBar>
+            </ProgressInfo>
+          </ProgressCard>
+
+          {expandedProjectId === project.id && project.tasks && (
+            <TaskListCard>
+              <TaskSectionTitle>Work Progress</TaskSectionTitle>
+              {project.tasks.map((task, idx) => (
+                <TaskItem key={idx}>
+                  <TaskStatus status={task.status}>
+                    {task.status === 'completed' ? '✓' : task.status === 'in-progress' ? '⋯' : '○'}
+                  </TaskStatus>
+                  <TaskName>{task.name}</TaskName>
+                  <TaskDate>{task.date}</TaskDate>
+                </TaskItem>
+              ))}
+            </TaskListCard>
+          )}
+        </React.Fragment>
+      ))}
+      <BrowseMoreCard onClick={openProjectModal}>
+        <PlusIcon>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </PlusIcon>
+        <BrowseText>Browse More</BrowseText>
+      </BrowseMoreCard>
+    </>
+  ), [projects, expandedProjectId]);
+
   return (
     <Container>
+      {isLoading && (
+        <LoadingOverlay>
+          <LoadingSpinner />
+          <LoadingText>Loading your dashboard...</LoadingText>
+        </LoadingOverlay>
+      )}
+
+      {/* 🚀 TOAST NOTIFICATION */}
+      {toast.show && (
+        <Toast type={toast.type}>
+          <ToastIcon>
+            {toast.type === 'success' ? '✓' : '✕'}
+          </ToastIcon>
+          <ToastMessage>{toast.message}</ToastMessage>
+        </Toast>
+      )}
+      
       <Header>
         <LeftSection>
           <LogoSection>
             <LogoIcon>
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <rect x="10" y="10" width="20" height="20" stroke="#000" strokeWidth="2" rx="2"/>
                 <line x1="20" y1="10" x2="20" y2="30" stroke="#000" strokeWidth="2"/>
                 <line x1="10" y1="20" x2="30" y2="20" stroke="#000" strokeWidth="2"/>
@@ -354,22 +579,21 @@ const navigate = useNavigate();
           <CommunityHeader>
             <CommunityContent>
               <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-
-<ExploreButton onClick={() => navigate('/community')}>
-  Explore Now
-</ExploreButton>
+              <ExploreButton onClick={() => navigate('/community')}>
+                Explore Now
+              </ExploreButton>
             </CommunityContent>
-           <CommunityAvatars>
-  <Avatar>
-    <AvatarImg src="/11.png" alt="Community Member 1" />
-  </Avatar>
-  <Avatar>
-    <AvatarImg src="/12.png" alt="Community Member 2" />
-  </Avatar>
-  <Avatar>
-    <AvatarImg src="/13.png" alt="Community Member 3" />
-  </Avatar>
-</CommunityAvatars>
+            <CommunityAvatars>
+              <Avatar>
+                <AvatarImg src="/11.png" alt="Community Member 1" loading="lazy" />
+              </Avatar>
+              <Avatar>
+                <AvatarImg src="/12.png" alt="Community Member 2" loading="lazy" />
+              </Avatar>
+              <Avatar>
+                <AvatarImg src="/13.png" alt="Community Member 3" loading="lazy" />
+              </Avatar>
+            </CommunityAvatars>
           </CommunityHeader>
         </CommunityCard>
 
@@ -378,7 +602,8 @@ const navigate = useNavigate();
             <img 
               src="/event-icon.png" 
               alt="Event" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              loading="lazy"
             />
           </FeedIcon>
           <FeedBody>
@@ -391,88 +616,26 @@ const navigate = useNavigate();
         </FeedCard>
       </MainContent>
 
-      {/* ======================== YOUR SERVICES SECTION ======================== */}
       <SectionTitle>Your Services</SectionTitle>
       <ServicesGrid>
-        {services.map((service) => (
-          <ServiceCard key={service.id}>
-            <ServiceImageWrapper>
-              <ServiceImage src={service.image} alt={service.title} />
-              <ServiceActions>
-                <EditIcon onClick={() => handleEditService(service.id)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11 4H4v17h17v-7" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 4-6-6 4-4L18.5 2.5z" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </EditIcon>
-                <DeleteIcon onClick={() => handleDeleteService(service.id)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m6 8v6m2-6v6" stroke="red" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </DeleteIcon>
-              </ServiceActions>
-            </ServiceImageWrapper>
-            <ServiceTitle>{service.title}</ServiceTitle>
-          </ServiceCard>
-        ))}
-
-        {/* ADD SERVICE BUTTON */}
-        <AddServiceCard onClick={openServiceModal}>
-          <PlusIcon>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </PlusIcon>
-          <AddServiceText>Add New Service</AddServiceText>
-        </AddServiceCard>
+        {ServicesList}
       </ServicesGrid>
+      {hasMoreServices && user && (
+        <LoadMoreButton onClick={loadMoreServices}>
+          Load More Services
+        </LoadMoreButton>
+      )}
 
-      {/* ======================== YOUR PROJECTS SECTION ======================== */}
       <SectionTitle>Your Projects</SectionTitle>
       <ProgressGrid>
-        {projects.map((project) => (
-          <React.Fragment key={project.id}>
-            <ProgressCard onClick={() => toggleProjectDetails(project.id)}>
-              <ProgressImage src={project.id === '1' ? project1 : project2} alt="Project" />
-              <ProgressInfo>
-                <ProgressTitle>{project.title}</ProgressTitle>
-                <ProgressCost>Cost : {project.cost}</ProgressCost>
-                <ProgressBar>
-                  <ProgressFill style={{ width: `${project.progress}%` }} />
-                  <ProgressText>Progress {project.progress}%</ProgressText>
-                </ProgressBar>
-              </ProgressInfo>
-            </ProgressCard>
-
-            {expandedProjectId === project.id && (
-              <TaskListCard>
-                <TaskSectionTitle>Work Progress</TaskSectionTitle>
-                {project.tasks.map((task, idx) => (
-                  <TaskItem key={idx}>
-                    <TaskStatus status={task.status}>
-                      {task.status === 'completed' ? '✓' : task.status === 'in-progress' ? '⋯' : '○'}
-                    </TaskStatus>
-                    <TaskName>{task.name}</TaskName>
-                    <TaskDate>{task.date}</TaskDate>
-                  </TaskItem>
-                ))}
-              </TaskListCard>
-            )}
-          </React.Fragment>
-        ))}
-
-        {/* ADD PROJECT BUTTON */}
-        <BrowseMoreCard onClick={openProjectModal}>
-          <PlusIcon>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4v16m8-8H4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </PlusIcon>
-          <BrowseText>Browse More</BrowseText>
-        </BrowseMoreCard>
+        {ProjectsList}
       </ProgressGrid>
+      {hasMoreProjects && user && (
+        <LoadMoreButton onClick={loadMoreProjects}>
+          Load More Projects
+        </LoadMoreButton>
+      )}
 
-      {/* ======================== MODAL ======================== */}
       {isModalOpen && (
         <ModalOverlay onClick={closeModal}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -546,8 +709,7 @@ const navigate = useNavigate();
   );
 };
 
-// --- STYLED COMPONENTS (ALL EXISTING + NEW MODAL STYLES) ---
-
+// STYLED COMPONENTS
 const Container = styled.div`
   background: #fff;
   min-height: 100vh;
@@ -565,10 +727,7 @@ const Header = styled.div`
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   margin: 0 0 16px 0;
   transition: box-shadow 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-  }
+  &:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
 `;
 
 const LeftSection = styled.div`
@@ -606,11 +765,7 @@ const LogoText = styled.div`
   font-size: 14px;
   font-weight: 500;
   line-height: 1.25;
-
-  strong {
-    color: #333;
-  }
-
+  strong { color: #333; }
   small {
     font-size: 12px;
     color: #7a7a7a;
@@ -628,19 +783,12 @@ const SearchBar = styled.input`
   color: #444;
   outline: none;
   transition: all 0.2s ease;
-
-  &::placeholder {
-    color: #bbb;
-  }
-
+  &::placeholder { color: #bbb; }
   &:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
-
-  &:hover {
-    border-color: #b0b0b0;
-  }
+  &:hover { border-color: #b0b0b0; }
 `;
 
 const FilterButton = styled.button`
@@ -653,7 +801,6 @@ const FilterButton = styled.button`
   color: #555;
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover {
     background: #ebebeb;
     border-color: #d0d0d0;
@@ -672,7 +819,6 @@ const IconCircle = styled.div`
   position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -702,7 +848,6 @@ const UserDropdown = styled.div`
   padding: 4px 12px 4px 7px;
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -754,10 +899,7 @@ const DropdownItem = styled.div`
   color: #555;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: #f5f5f5;
-  }
+  &:hover { background: #f5f5f5; }
 `;
 
 const MainContent = styled.div`
@@ -824,17 +966,11 @@ const ExploreButton = styled.button`
   box-shadow: 0 2px 8px rgba(0,0,0,0.11);
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover {
     background: #232323;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
-`;
-
-const Avatars = styled.div`
-  display: flex;
-  margin-top: 6px;
 `;
 
 const Avatar = styled.div`
@@ -845,9 +981,7 @@ const Avatar = styled.div`
   border: 3px solid #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.10);
   margin-left: -12px;
-  &:first-child {
-    margin-left: 0;
-  }
+  &:first-child { margin-left: 0; }
 `;
 
 const AvatarImg = styled.img`
@@ -910,9 +1044,6 @@ const SectionTitle = styled.h2`
   margin: 32px 0 16px 12px;
 `;
 
-// ========================
-// YOUR SERVICES SECTION
-// ========================
 const ServicesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -928,10 +1059,7 @@ const ServiceCard = styled.div`
   position: relative;
   cursor: pointer;
   transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
+  &:hover { transform: translateY(-2px); }
 `;
 
 const ServiceImageWrapper = styled.div`
@@ -965,10 +1093,7 @@ const EditIcon = styled.div`
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: rgba(255,255,255,1);
-  }
+  &:hover { background: rgba(255,255,255,1); }
 `;
 
 const DeleteIcon = styled.div`
@@ -981,10 +1106,7 @@ const DeleteIcon = styled.div`
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s;
-
-  &:hover {
-    background: rgba(255,255,255,1);
-  }
+  &:hover { background: rgba(255,255,255,1); }
 `;
 
 const ServiceTitle = styled.div`
@@ -1006,7 +1128,6 @@ const AddServiceCard = styled.div`
   padding: 32px 16px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
@@ -1020,9 +1141,6 @@ const AddServiceText = styled.div`
   margin-top: 8px;
 `;
 
-// ========================
-// YOUR PROJECTS SECTION
-// ========================
 const ProgressGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1040,10 +1158,7 @@ const ProgressCard = styled.div`
   gap: 16px;
   cursor: pointer;
   transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
+  &:hover { transform: translateY(-2px); }
 `;
 
 const ProgressImage = styled.img`
@@ -1105,7 +1220,6 @@ const BrowseMoreCard = styled.div`
   padding: 32px 16px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
@@ -1129,7 +1243,6 @@ const BrowseText = styled.div`
   color: #333;
 `;
 
-// 👇 Inline Task List Styles
 const TaskListCard = styled.div`
   background: #f9f9f9;
   border-radius: 12px;
@@ -1178,7 +1291,6 @@ const TaskDate = styled.div`
   white-space: nowrap;
 `;
 
-// 👇 NEW MODAL STYLES
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -1286,8 +1398,154 @@ const Button = styled.button`
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
+  &:hover { background: #333; }
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const LoadingText = styled.div`
+  margin-top: 16px;
+  font-size: 16px;
+  color: #666;
+`;
+
+const LoadMoreButton = styled.button`
+  background: #f5f5f5;
+  color: #333;
+  border: 2px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 auto 32px;
+  display: block;
+  transition: all 0.2s ease;
   &:hover {
-    background: #333;
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+`;
+
+const Toast = styled.div`
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: ${props => props.type === 'success' ? '#27ae60' : '#e74c3c'};
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 4000;
+  animation: slideIn 0.3s ease-out;
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`;
+
+const ToastIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+`;
+
+const ToastMessage = styled.div`
+  font-size: 15px;
+  font-weight: 500;
+`;
+
+const SyncingBadge = styled.div`
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(255, 193, 7, 0.95);
+  color: #333;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  
+  &::before {
+    content: '⟳';
+    display: inline-block;
+    animation: rotate 1s linear infinite;
+  }
+  
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const SyncingBadgeInline = styled.span`
+  margin-left: 8px;
+  background: rgba(255, 193, 7, 0.2);
+  color: #f39c12;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  
+  &::before {
+    content: '⟳';
+    display: inline-block;
+    animation: rotate 1s linear infinite;
+  }
+  
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 `;
 
