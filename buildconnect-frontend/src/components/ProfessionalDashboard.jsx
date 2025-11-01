@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db /* , storage */ } from '../firebase';
+import { useNavigate } from 'react-router-dom';
 // import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'; // Uncomment when ready
 import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 
@@ -20,7 +21,7 @@ const ProfessionalDashboard = () => {
   const [services, setServices] = useState([]);
   const [projects, setProjects] = useState([]);
   const [expandedProjectId, setExpandedProjectId] = useState(null);
-
+const navigate = useNavigate();
   // 👇 MODAL STATE
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(''); // 'service' or 'project'
@@ -353,7 +354,10 @@ const ProfessionalDashboard = () => {
           <CommunityHeader>
             <CommunityContent>
               <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-              <ExploreButton>Explore Now</ExploreButton>
+
+<ExploreButton onClick={() => navigate('/community')}>
+  Explore Now
+</ExploreButton>
             </CommunityContent>
            <CommunityAvatars>
   <Avatar>

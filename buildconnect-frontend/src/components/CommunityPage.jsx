@@ -11,7 +11,7 @@ const avatar1 = "/11.png";
 const avatar2 = "/12.png";
 const avatar3 = "/13.png";
 
-const Community = () => {
+const CommunityPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -87,9 +87,11 @@ const Community = () => {
     ? communityPosts 
     : communityPosts.filter(post => post.category === activeFilter);
 
+  // ✅ FIXED: Handles both Firestore Timestamp and JS Date
   const formatTime = (timestamp) => {
+    const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
-    const diff = now - timestamp.toDate();
+    const diff = now - date;
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     
@@ -503,4 +505,4 @@ const ContributorPoints = styled.div`
   color: #000;
 `;
 
-export default Community;
+export default CommunityPage;

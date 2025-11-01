@@ -7,7 +7,7 @@ import OnboardingPage3 from './components/OnboardingPage3';
 import HomePage from './components/HomePage';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import ProfilePage from './components/ProfilePage';
- 
+import CommunityPage from './components/CommunityPage';
 
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
         <Route path="/homepage" element={<HomePage />} />
         <Route path="/dashboard" element={< ProfessionalDashboard/>} />
         <Route path="/profile/:userId" element={<ProfilePage />} /> 
-        
+     <Route path="/community" element={<CommunityPage/>} />
       </Routes>
     </BrowserRouter>
   );

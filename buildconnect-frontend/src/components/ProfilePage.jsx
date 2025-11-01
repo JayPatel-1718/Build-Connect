@@ -30,11 +30,11 @@ const mockProfiles = {
     name: 'Rahul Mehta',
     role: 'Interior Designer',
     experience: '8+ years in interior design, specializing in modern, minimalist, and sustainable spaces.',
-    avatar: '/15.png',
+    avatar: '/bridge construction project.png',
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
-        image: '/image-1.png',
+        image: '/office space.jpg',
         status: 'Currently Working',
         color: '#e74c3c',
         description: 'Modern office design with sustainable materials and open workspaces.',
@@ -45,7 +45,7 @@ const mockProfiles = {
       },
       {
         title: 'Luxury Villa Renovation (Pune)',
-        image: '/image-2.png',
+        image: '/office 2.png',
         status: 'Completed In 1 Years',
         color: '#2ecc71',
         description: 'Complete renovation of 3BHK villa with modern amenities.',
@@ -56,7 +56,7 @@ const mockProfiles = {
       },
       {
         title: 'Modern Apartment Design',
-        image: '/image.png',
+        image: '/ModalForm.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '2BHK apartment with smart home integration.',
@@ -67,7 +67,7 @@ const mockProfiles = {
       },
       {
         title: 'Corporate Office Hub',
-        image: '/image-1.png',
+        image: '/Corporate Office Hub.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '20,000 sq ft corporate office space.',
@@ -120,7 +120,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Smart Building Installation',
-        image: '/image.png',
+        image: '/modern office.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Complete electrical system for 20-story commercial building.',
@@ -775,9 +775,12 @@ const ProfilePage = () => {
       {/* NAVBAR - Same as HomePage with Back Button */}
       <Header>
         <LeftSection>
-          <BackButton onClick={() => navigate('/homepage')}>
-            ← Back to Dashboard
-          </BackButton>
+        <BackButton onClick={() => navigate('/homepage')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back to Dashboard
+        </BackButton>
           <LogoSection>
             <LogoIcon>
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
