@@ -30,7 +30,7 @@ const mockProfiles = {
     name: 'Rahul Mehta',
     role: 'Interior Designer',
     experience: '8+ years in interior design, specializing in modern, minimalist, and sustainable spaces.',
-    avatar: '/bridge construction project.png',
+    avatar: '/rahul-mehta.png',
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
@@ -56,7 +56,7 @@ const mockProfiles = {
       },
       {
         title: 'Modern Apartment Design',
-        image: '/ModalForm.png',
+        image: '/OIP.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '2BHK apartment with smart home integration.',

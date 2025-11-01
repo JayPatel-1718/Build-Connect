@@ -1,3 +1,4 @@
+// src/components/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -113,7 +114,7 @@ const HomePage = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-  const [userProjects, setUserProjects] = useState(getFallbackProjects()); // Start with fallback
+  const [userProjects, setUserProjects] = useState(getFallbackProjects());
   const [expandedProjectId, setExpandedProjectId] = useState(null);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
@@ -122,6 +123,12 @@ const HomePage = () => {
   const [news, setNews] = useState([]);
   const [loadingNews, setLoadingNews] = useState(true);
   const [newsError, setNewsError] = useState(null);
+
+  // --- CHATBOT STATE ---
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // 1. Fetch user auth state and profile
   useEffect(() => {
@@ -175,45 +182,32 @@ const HomePage = () => {
     };
 
     fetchProjects();
-  }, [user]); // Depend on `user` state
+  }, [user]);
 
-  // 3. Fetch News from NewsAPI.org
+  // 3. Fetch News
   useEffect(() => {
     const fetchNews = async () => {
       setLoadingNews(true);
       setNewsError(null);
       try {
-        // ✅ YOUR API KEY GOES HERE
         const API_KEY = "7d53f07fa2ff4613b665ebeb67096b8b"; // 👈 REPLACE THIS
-        const query = "construction OR interior design OR civil engineering OR architecture";
-        const sortBy = "publishedAt"; // Options: relevancy, popularity, publishedAt
-        const pageSize = 1; // Number of articles
-
+        const queryParam = "construction OR interior design OR civil engineering OR architecture";
         const response = await fetch(
-          `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=${sortBy}&pageSize=${pageSize}&apiKey=${API_KEY}`
+          `https://newsapi.org/v2/everything?q=${encodeURIComponent(queryParam)}&sortBy=publishedAt&pageSize=1&apiKey=${API_KEY}`
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-
-        // Filter articles with images (NewsAPI sometimes returns articles without images)
         const validArticles = data.articles.filter(article => article.urlToImage);
-
-        setNews(validArticles.slice(0, 3)); // Get first 3 valid articles
+        setNews(validArticles.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch news:", err);
-        setNewsError("Failed to load news. Please try again later.");
-
-        // Fallback news if API fails
         setNews([
           {
             title: "Welcome to BuildConnect News!",
-            description: "Stay tuned for the latest updates in construction and design. This feed will populate with live news soon.",
+            description: "Stay tuned for the latest updates in construction and design.",
             url: "#",
-            urlToImage: "/image.png", // Your fallback image
+            urlToImage: "/image.png",
             publishedAt: new Date().toISOString(),
             source: { name: "BuildConnect" }
           }
@@ -224,7 +218,32 @@ const HomePage = () => {
     };
 
     fetchNews();
-  }, []); // Run once on mount
+  }, []);
+
+  // --- CHATBOT HANDLER ---
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = { text: input, isUser: true };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8080/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: input })
+      });
+
+      const data = await res.json();
+      setMessages(prev => [...prev, { text: data.answer || "No response.", isUser: false }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { text: "⚠️ Couldn't reach assistant. Is the Java backend running?", isUser: false }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -248,7 +267,7 @@ const HomePage = () => {
 
   return (
     <Container>
-      {/* NAVBAR - Same as HomePage */}
+      {/* NAVBAR */}
       <Header>
         <LeftSection>
           <LogoSection>
@@ -309,46 +328,37 @@ const HomePage = () => {
         </RightSection>
       </Header>
 
+      {/* MAIN CONTENT */}
       <MainContent>
         {/* COMMUNITY CARD */}
         <CommunityCard>
           <CommunityHeader>
             <CommunityContent>
               <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-              <ExploreButton>Explore Now</ExploreButton>
+              <ExploreButton onClick={() => navigate('/Community')}>
+                Explore Now
+              </ExploreButton>
             </CommunityContent>
             <CommunityAvatars>
-              <Avatar>
-                <AvatarImg src={avatar1} alt="Avatar1" />
-              </Avatar>
-              <Avatar>
-                <AvatarImg src={avatar2} alt="Avatar2" />
-              </Avatar>
-              <Avatar>
-                <AvatarImg src={avatar3} alt="Avatar3" />
-              </Avatar>
+              <Avatar><AvatarImg src={avatar1} alt="1" /></Avatar>
+              <Avatar><AvatarImg src={avatar2} alt="2" /></Avatar>
+              <Avatar><AvatarImg src={avatar3} alt="3" /></Avatar>
             </CommunityAvatars>
           </CommunityHeader>
         </CommunityCard>
 
-        {/* NEWS FEED SECTION */}
+        {/* NEWS SECTION */}
         <NewsSection>
           <SectionTitle>Industry News</SectionTitle>
           {loadingNews ? (
-            <NewsLoadingCard>
-              <p>Loading latest news...</p>
-            </NewsLoadingCard>
+            <NewsLoadingCard><p>Loading latest news...</p></NewsLoadingCard>
           ) : newsError ? (
-            <NewsErrorCard>
-              <p>{newsError}</p>
-            </NewsErrorCard>
+            <NewsErrorCard><p>{newsError}</p></NewsErrorCard>
           ) : (
             <NewsGrid>
               {news.map((article, index) => (
                 <NewsCard key={index} onClick={() => window.open(article.url, '_blank')}>
-                  {article.urlToImage && (
-                    <NewsImage src={article.urlToImage} alt={article.title} />
-                  )}
+                  {article.urlToImage && <NewsImage src={article.urlToImage} alt={article.title} />}
                   <NewsContent>
                     <NewsSource>{article.source.name}</NewsSource>
                     <NewsTitle>{article.title}</NewsTitle>
@@ -408,9 +418,7 @@ const HomePage = () => {
       <SectionTitle>Your Projects</SectionTitle>
       <ProgressGrid>
         {loadingProjects ? (
-          <NoProjectsCard>
-            <p>Loading your projects...</p>
-          </NoProjectsCard>
+          <NoProjectsCard><p>Loading your projects...</p></NoProjectsCard>
         ) : userProjects.length > 0 ? (
           userProjects.map((project) => (
             <React.Fragment key={project.id}>
@@ -465,6 +473,41 @@ const HomePage = () => {
           <BrowseText>Browse More</BrowseText>
         </BrowseMoreCard>
       </ProgressGrid>
+
+      {/* 💬 CHATBOT BUTTON */}
+      <ChatbotButton onClick={() => setIsChatOpen(true)}>
+        💬
+      </ChatbotButton>
+
+      {/* 💬 CHATBOT MODAL */}
+      {isChatOpen && (
+        <ChatbotModal>
+          <ChatbotHeader>
+            <h3>BuildBot Assistant</h3>
+            <button onClick={() => setIsChatOpen(false)}>×</button>
+          </ChatbotHeader>
+          <ChatbotMessages>
+            {messages.map((msg, i) => (
+              <Message key={i} isUser={msg.isUser}>
+                {msg.text}
+              </Message>
+            ))}
+            {isLoading && <Message isUser={false}>Thinking...</Message>}
+          </ChatbotMessages>
+          <ChatbotInput>
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ask about construction, materials, codes..."
+              disabled={isLoading}
+            />
+            <button onClick={handleSend} disabled={isLoading || !input.trim()}>
+              Send
+            </button>
+          </ChatbotInput>
+        </ChatbotModal>
+      )}
     </Container>
   );
 };
@@ -1303,6 +1346,107 @@ const TaskDate = styled.div`
   color: #777;
   white-space: nowrap;
   font-weight: 500;
+`;
+
+const ChatbotButton = styled.button`
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #000;
+  color: white;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  &:hover {
+    background: #333;
+  }
+`;
+
+const ChatbotModal = styled.div`
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 380px;
+  height: 500px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+`;
+
+const ChatbotHeader = styled.div`
+  padding: 16px;
+  background: #000;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  h3 { margin: 0; font-size: 16px; }
+  button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+  }
+`;
+
+const ChatbotMessages = styled.div`
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Message = styled.div`
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  ${props => props.isUser ? `
+    background: #e0f7fa;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  ` : `
+    background: #f1f1f1;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  `}
+`;
+
+const ChatbotInput = styled.div`
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #eee;
+  gap: 8px;
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+  }
+  button {
+    padding: 10px 16px;
+    background: #000;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
 `;
 
 export default HomePage;
