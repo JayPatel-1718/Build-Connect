@@ -1,5 +1,5 @@
 // src/App.js
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route ,Navigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import OnboardingPage from './components/OnboardingPage';
 import OnboardingPage2 from './components/OnboardingPage2';
@@ -8,7 +8,9 @@ import HomePage from './components/HomePage';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import ProfilePage from './components/ProfilePage';
 import CommunityPage from './components/CommunityPage';
-import ProjectComparison from './components/ProjectComparison';
+import ProjectComparison from './components/ProjectComparison'; // Add this line
+import CommunityPageProfessional from './components/CommunityPageProfessional';
+
 function App() {
   return (
     <BrowserRouter>
@@ -19,17 +21,15 @@ function App() {
         <Route path="/onboarding2" element={<OnboardingPage2 />} />
         <Route path="/onboarding3" element={<OnboardingPage3 />} />
         <Route path="/homepage" element={<HomePage />} />
-        <Route path="/dashboard" element={<ProfessionalDashboard />} />
-        <Route path="/profile/:userId" element={<ProfilePage />} />
-        <Route path="/community" element={<CommunityPage />} />
-      <Route path="/compare" element={<ProjectComparison />} /> 
-       
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/dashboard" element={<ProfessionalDashboard/>} />
+        <Route path="/profile/:userId" element={<ProfilePage />} /> 
+     <Route path="/community" element={<CommunityPage/>} />
+      <Route path="/compare" element={<ProjectComparison />} /> Add this line
+       <Route path="/communityprofessional" element={<CommunityPageProfessional />} />
+       <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
-
-

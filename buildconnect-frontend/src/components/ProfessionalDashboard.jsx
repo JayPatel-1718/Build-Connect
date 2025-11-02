@@ -579,7 +579,7 @@ const ProfessionalDashboard = () => {
           <CommunityHeader>
             <CommunityContent>
               <CommunityTitle>The<br /><span>Community</span></CommunityTitle>
-              <ExploreButton onClick={() => navigate('/community')}>
+              <ExploreButton onClick={() => navigate('/dashboard')}>
                 Explore Now
               </ExploreButton>
             </CommunityContent>

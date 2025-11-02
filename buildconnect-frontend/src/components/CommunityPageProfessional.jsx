@@ -36,7 +36,7 @@ const avatarPriya = "/12.png";
 const avatarVikram = "/11.png";
 const avatarMeera = "/15.png";
 
-const CommunityPage = () => {
+const CommunityPageProfessional = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -823,4 +823,4 @@ const LoadMoreButton = styled.button`
   }
 `;
 
-export default CommunityPage;
+export default CommunityPageProfessional;
