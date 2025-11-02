@@ -9,7 +9,7 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, limi
 const avatar1 = "/11.png";
 const service1 = "/interior.jpg";
 const service2 = "/foundation.jpg";
-const service3 = "/service-renovation.jpg";
+const service3 = "/renovation2.jpeg";
 const project1 = "/shopping mall construction.png";
 const project2 = "/water management system.png";
 
