@@ -1,28 +1,84 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
-// --- Keyframe Animations ---
+// --- Enhanced Keyframe Animations ---
 const fadeIn = keyframes`
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 `;
-const pulse = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+
+const slideInLeft = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 `;
 
-// Enhanced mock data with 6-8 projects per profile
+const slideInRight = keyframes`
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+`;
+
+const pulse = keyframes`
+  0% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.05); 
+  }
+  100% { 
+    transform: scale(1); 
+  }
+`;
+
+const shimmer = keyframes`
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+`;
+
+const float = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+`;
+
+const getAnimation = (animationType) => {
+  const animations = {
+    fadeIn: css`${fadeIn} 0.8s ease-out`,
+    slideInLeft: css`${slideInLeft} 0.6s ease-out`,
+    slideInRight: css`${slideInRight} 0.6s ease-out`,
+    shimmer: css`${shimmer} 2s infinite linear`,
+    float: css`${float} 3s ease-in-out infinite`,
+    pulse: css`${pulse} 2s infinite`
+  };
+  return animations[animationType] || animations.fadeIn;
+};
+
+// Enhanced mock data with richer content
 const mockProfiles = {
   '1': {
     id: '1',
@@ -30,6 +86,61 @@ const mockProfiles = {
     role: 'Interior Designer',
     experience: '8+ years in interior design, specializing in modern, minimalist, and sustainable spaces.',
     avatar: '/rahul-mehta.png',
+    coverImage: '/vib.png',
+    contactInfo: {
+      email: 'rahul.mehta@example.com',
+      phone: '+91 98765 43210',
+      website: 'www.rahulmehta.com',
+      location: 'Mumbai, Maharashtra'
+    },
+    stats: {
+      totalProjects: 47,
+      totalEarnings: '$2.5M',
+      completionRate: '96%',
+      responseTime: '< 2 hours'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'Immediately'
+    },
+    skills: [
+      { name: 'Space Planning', level: 95 },
+      { name: '3D Visualization', level: 90 },
+      { name: 'Color Theory', level: 88 },
+      { name: 'Sustainable Design', level: 92 },
+      { name: 'Project Management', level: 85 },
+      { name: 'Material Selection', level: 93 }
+    ],
+    certifications: [
+      { title: 'LEED Certified Professional', year: '2019' },
+      { title: 'Interior Design License', year: '2018' },
+      { title: 'Sustainable Design Certificate', year: '2020' }
+    ],
+    achievements: [
+      { 
+        title: 'Best Interior Designer 2022',
+        description: 'Awarded by Indian Design Council',
+        icon: '🏆',
+        year: '2022'
+      },
+      { 
+        title: 'Sustainable Design Excellence',
+        description: 'Recognition for eco-friendly projects',
+        icon: '🌱',
+        year: '2021'
+      },
+      { 
+        title: 'Client Choice Award',
+        description: 'Highest client satisfaction rating',
+        icon: '⭐',
+        year: '2023'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/rahul-mehta',
+      instagram: '@rahulmehta_designs',
+      behance: 'behance.net/rahulmehta'
+    },
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
@@ -40,7 +151,9 @@ const mockProfiles = {
         budget: '$2,50,000',
         timeline: '6 months',
         location: 'Bangalore, Karnataka',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Commercial',
+        tags: ['Sustainable', 'Modern', 'Open Space']
       },
       {
         title: 'Luxury Villa Renovation (Pune)',
@@ -51,7 +164,9 @@ const mockProfiles = {
         budget: '$5,00,000',
         timeline: '12 months',
         location: 'Pune, Maharashtra',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Residential',
+        tags: ['Luxury', 'Renovation', 'Modern']
       },
       {
         title: 'Modern Apartment Design',
@@ -62,7 +177,9 @@ const mockProfiles = {
         budget: '$1,80,000',
         timeline: '4 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Residential',
+        tags: ['Smart Home', 'Minimalist', '2BHK']
       },
       {
         title: 'Corporate Office Hub',
@@ -73,7 +190,9 @@ const mockProfiles = {
         budget: '$8,00,000',
         timeline: '8 months',
         location: 'Hyderabad, Telangana',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Commercial',
+        tags: ['Corporate', 'Large Scale', 'Modern']
       },
       {
         title: 'Minimalist Studio Apartment',
@@ -84,7 +203,9 @@ const mockProfiles = {
         budget: '$95,000',
         timeline: '3 months',
         location: 'Delhi, India',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Residential',
+        tags: ['Minimalist', 'Compact', 'Multi-functional']
       },
       {
         title: 'Restaurant Interior Design',
@@ -95,7 +216,9 @@ const mockProfiles = {
         budget: '$3,20,000',
         timeline: '5 months',
         location: 'Chandigarh, India',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Hospitality',
+        tags: ['Restaurant', 'Industrial', 'Contemporary']
       },
       {
         title: 'Retail Storefront Revamp',
@@ -106,7 +229,9 @@ const mockProfiles = {
         budget: '$1,50,000',
         timeline: '4 months',
         location: 'Ahmedabad, Gujarat',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Retail',
+        tags: ['Boutique', 'Lighting', 'Display']
       }
     ]
   },
@@ -116,6 +241,55 @@ const mockProfiles = {
     role: 'Electrical Engineer',
     experience: '5+ years in commercial electrical installations.',
     avatar: '/aarav-khanna.jpg',
+    coverImage: '/smart building installation.png',
+    contactInfo: {
+      email: 'aarav.khanna@example.com',
+      phone: '+91 98765 43211',
+      website: 'www.aaravelectrical.com',
+      location: 'Delhi, India'
+    },
+    stats: {
+      totalProjects: 32,
+      totalEarnings: '$1.8M',
+      completionRate: '98%',
+      responseTime: '< 1 hour'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'Next Week'
+    },
+    skills: [
+      { name: 'Power Distribution', level: 95 },
+      { name: 'Smart Systems', level: 88 },
+      { name: 'Solar Integration', level: 90 },
+      { name: 'Industrial Wiring', level: 92 },
+      { name: 'Safety Protocols', level: 96 },
+      { name: 'Load Analysis', level: 89 }
+    ],
+    certifications: [
+      { title: 'Professional Electrical Engineer License', year: '2019' },
+      { title: 'Solar Energy Certification', year: '2020' },
+      { title: 'OSHA Safety Certification', year: '2018' }
+    ],
+    achievements: [
+      { 
+        title: 'Innovation in Electrical Design',
+        description: 'Award for smart building solutions',
+        icon: '💡',
+        year: '2023'
+      },
+      { 
+        title: 'Safety Excellence Award',
+        description: 'Zero accidents record',
+        icon: '🛡️',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/aarav-khanna',
+      instagram: '@aarav_electrical',
+      behance: 'behance.net/aaravkhanna'
+    },
     projects: [
       {
         title: 'Smart Building Installation',
@@ -126,7 +300,9 @@ const mockProfiles = {
         budget: '$3,20,000',
         timeline: '8 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Commercial',
+        tags: ['Smart Building', 'Commercial', 'High-rise']
       },
       {
         title: 'Industrial Complex Wiring',
@@ -137,7 +313,9 @@ const mockProfiles = {
         budget: '$4,50,000',
         timeline: '10 months',
         location: 'Ahmedabad, Gujarat',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Industrial',
+        tags: ['Industrial', 'Heavy Duty', 'Infrastructure']
       },
       {
         title: 'Smart Home Automation',
@@ -148,7 +326,9 @@ const mockProfiles = {
         budget: '$1,20,000',
         timeline: '3 months',
         location: 'Pune, Maharashtra',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Residential',
+        tags: ['Smart Home', 'Automation', 'IoT']
       },
       {
         title: 'Solar Power Integration',
@@ -159,7 +339,9 @@ const mockProfiles = {
         budget: '$2,80,000',
         timeline: '6 months',
         location: 'Bangalore, Karnataka',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Renewable',
+        tags: ['Solar', 'Green Energy', 'Battery Backup']
       },
       {
         title: 'Data Center Electrical Setup',
@@ -170,7 +352,9 @@ const mockProfiles = {
         budget: '$15,00,000',
         timeline: '12 months',
         location: 'Noida, Uttar Pradesh',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Data Center',
+        tags: ['Data Center', 'Redundant', 'Tier-3']
       },
       {
         title: 'EV Charging Station Network',
@@ -181,7 +365,9 @@ const mockProfiles = {
         budget: '$8,50,000',
         timeline: '9 months',
         location: 'Chennai, Tamil Nadu',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Infrastructure',
+        tags: ['EV Charging', 'Network', 'Electric Vehicle']
       },
       {
         title: 'Hospital Electrical Infrastructure',
@@ -192,7 +378,9 @@ const mockProfiles = {
         budget: '$6,20,000',
         timeline: '10 months',
         location: 'Kolkata, West Bengal',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Healthcare',
+        tags: ['Hospital', 'Critical Systems', 'Healthcare']
       }
     ]
   },
@@ -202,6 +390,55 @@ const mockProfiles = {
     role: 'Civil Engineer',
     experience: '7+ years in structural design for high-rises.',
     avatar: '/nikita-desai.jpg',
+    coverImage: '/high rise residential complex.png',
+    contactInfo: {
+      email: 'nikita.desai@example.com',
+      phone: '+91 98765 43212',
+      website: 'www.nikitastructural.com',
+      location: 'Chennai, Tamil Nadu'
+    },
+    stats: {
+      totalProjects: 28,
+      totalEarnings: '$3.2M',
+      completionRate: '94%',
+      responseTime: '< 3 hours'
+    },
+    availability: {
+      status: 'Busy',
+      nextAvailable: '2 Weeks'
+    },
+    skills: [
+      { name: 'Structural Analysis', level: 96 },
+      { name: 'High-rise Design', level: 93 },
+      { name: 'Seismic Engineering', level: 90 },
+      { name: 'Concrete Design', level: 94 },
+      { name: 'Steel Structures', level: 88 },
+      { name: 'Foundation Design', level: 92 }
+    ],
+    certifications: [
+      { title: 'Professional Engineer License', year: '2017' },
+      { title: 'Seismic Design Certificate', year: '2019' },
+      { title: 'Structural Engineering Master\'s', year: '2016' }
+    ],
+    achievements: [
+      { 
+        title: 'Structural Excellence Award',
+        description: 'Recognition for innovative high-rise design',
+        icon: '🏗️',
+        year: '2022'
+      },
+      { 
+        title: 'Seismic Safety Champion',
+        description: 'Leadership in earthquake-resistant design',
+        icon: '🏔️',
+        year: '2021'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/nikita-desai',
+      instagram: '@nikita_structural',
+      behance: 'behance.net/nikitadesai'
+    },
     projects: [
       {
         title: 'High-Rise Residential Complex',
@@ -212,7 +449,9 @@ const mockProfiles = {
         budget: '$25,00,000',
         timeline: '24 months',
         location: 'Chennai, Tamil Nadu',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Residential',
+        tags: ['High-rise', 'Residential', '35 Stories']
       },
       {
         title: 'Bridge Construction Project',
@@ -223,7 +462,9 @@ const mockProfiles = {
         budget: '$50,00,000',
         timeline: '36 months',
         location: 'Kolkata, West Bengal',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Infrastructure',
+        tags: ['Bridge', 'Cable-stayed', '600m']
       },
       {
         title: 'Metro Station Structural Design',
@@ -234,7 +475,9 @@ const mockProfiles = {
         budget: '$18,00,000',
         timeline: '20 months',
         location: 'Delhi, India',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Transportation',
+        tags: ['Metro', 'Underground', 'Seismic']
       },
       {
         title: 'Dam Rehabilitation Project',
@@ -245,7 +488,9 @@ const mockProfiles = {
         budget: '$32,00,000',
         timeline: '30 months',
         location: 'Uttarakhand, India',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Water Infrastructure',
+        tags: ['Dam', 'Rehabilitation', 'Concrete']
       },
       {
         title: 'Airport Terminal Expansion',
@@ -256,7 +501,9 @@ const mockProfiles = {
         budget: '$45,00,000',
         timeline: '28 months',
         location: 'Hyderabad, Telangana',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Aviation',
+        tags: ['Airport', 'Expansion', 'International']
       },
       {
         title: 'Tunnel Boring Machine Shaft',
@@ -267,7 +514,9 @@ const mockProfiles = {
         budget: '$12,00,000',
         timeline: '18 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Underground',
+        tags: ['Tunnel', 'Boring Machine', 'Deep Excavation']
       },
       {
         title: 'Seismic Retrofitting Project',
@@ -278,7 +527,9 @@ const mockProfiles = {
         budget: '$8,50,000',
         timeline: '15 months',
         location: 'Jaipur, Rajasthan',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Heritage',
+        tags: ['Seismic', 'Retrofitting', 'Historical']
       }
     ]
   },
@@ -288,6 +539,55 @@ const mockProfiles = {
     role: 'Architect',
     experience: '10+ years designing luxury homes.',
     avatar: '/11.png',
+    coverImage: '/modernvilla.png',
+    contactInfo: {
+      email: 'kabir.sharma@example.com',
+      phone: '+91 98765 43213',
+      website: 'www.kabirarchitecture.com',
+      location: 'Jaipur, Rajasthan'
+    },
+    stats: {
+      totalProjects: 35,
+      totalEarnings: '$4.1M',
+      completionRate: '97%',
+      responseTime: '< 2 hours'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'This Week'
+    },
+    skills: [
+      { name: 'Architectural Design', level: 97 },
+      { name: 'Luxury Homes', level: 95 },
+      { name: 'Sustainable Architecture', level: 90 },
+      { name: 'Heritage Restoration', level: 88 },
+      { name: '3D Modeling', level: 93 },
+      { name: 'Urban Planning', level: 85 }
+    ],
+    certifications: [
+      { title: 'Registered Architect License', year: '2014' },
+      { title: 'LEED AP Certification', year: '2018' },
+      { title: 'Heritage Conservation Certificate', year: '2019' }
+    ],
+    achievements: [
+      { 
+        title: 'Architect of the Year 2023',
+        description: 'Recognition for outstanding architectural excellence',
+        icon: '🏛️',
+        year: '2023'
+      },
+      { 
+        title: 'Sustainable Design Leader',
+        description: 'Leadership in green architecture',
+        icon: '🌿',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/kabir-sharma',
+      instagram: '@kabir_architecture',
+      behance: 'behance.net/kabirsharma'
+    },
     projects: [
       {
         title: 'Modern Villa Design',
@@ -298,7 +598,9 @@ const mockProfiles = {
         budget: '$8,00,000',
         timeline: '18 months',
         location: 'Goa, India',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Residential',
+        tags: ['Luxury Villa', 'Sustainable', 'Custom']
       },
       {
         title: 'Heritage Restoration',
@@ -309,7 +611,9 @@ const mockProfiles = {
         budget: '$12,00,000',
         timeline: '24 months',
         location: 'Jaipur, Rajasthan',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Heritage',
+        tags: ['Heritage', 'Restoration', '200 Years']
       },
       {
         title: 'Eco-Friendly Resort',
@@ -320,7 +624,9 @@ const mockProfiles = {
         budget: '$15,00,000',
         timeline: '18 months',
         location: 'Kochi, Kerala',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Hospitality',
+        tags: ['Resort', 'Eco-friendly', 'Solar']
       },
       {
         title: 'Mixed-Use Development',
@@ -331,7 +637,9 @@ const mockProfiles = {
         budget: '$35,00,000',
         timeline: '30 months',
         location: 'Pune, Maharashtra',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Commercial',
+        tags: ['Mixed-use', '15 Stories', 'Multi-purpose']
       },
       {
         title: 'School Campus Design',
@@ -342,7 +650,9 @@ const mockProfiles = {
         budget: '$22,00,000',
         timeline: '24 months',
         location: 'Chandigarh, India',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Educational',
+        tags: ['School', 'Campus', 'International']
       },
       {
         title: 'Urban Housing Complex',
@@ -353,7 +663,9 @@ const mockProfiles = {
         budget: '$18,00,000',
         timeline: '22 months',
         location: 'Surat, Gujarat',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Residential',
+        tags: ['Affordable Housing', 'Urban', 'Community']
       },
       {
         title: 'Museum Architecture',
@@ -364,7 +676,9 @@ const mockProfiles = {
         budget: '$30,00,000',
         timeline: '28 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Cultural',
+        tags: ['Museum', 'Contemporary', 'Art Gallery']
       }
     ]
   },
@@ -374,6 +688,55 @@ const mockProfiles = {
     role: 'Plumbing Engineer',
     experience: '6+ years in plumbing and water management systems.',
     avatar: '/priya-nair.jpg',
+    coverImage: '/water management system.png',
+    contactInfo: {
+      email: 'priya.nair@example.com',
+      phone: '+91 98765 43214',
+      website: 'www.priyaplumbing.com',
+      location: 'Kochi, Kerala'
+    },
+    stats: {
+      totalProjects: 42,
+      totalEarnings: '$1.5M',
+      completionRate: '99%',
+      responseTime: '< 1 hour'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'Immediately'
+    },
+    skills: [
+      { name: 'Water Systems', level: 96 },
+      { name: 'Waste Management', level: 92 },
+      { name: 'Rainwater Harvesting', level: 89 },
+      { name: 'Pool Systems', level: 88 },
+      { name: 'Hospital Plumbing', level: 94 },
+      { name: 'Commercial Systems', level: 91 }
+    ],
+    certifications: [
+      { title: 'Professional Plumbing License', year: '2018' },
+      { title: 'Water Management Certification', year: '2019' },
+      { title: 'Hospital Plumbing Specialist', year: '2020' }
+    ],
+    achievements: [
+      { 
+        title: 'Water Conservation Award',
+        description: 'Excellence in water-saving designs',
+        icon: '💧',
+        year: '2023'
+      },
+      { 
+        title: 'Healthcare Plumbing Excellence',
+        description: 'Recognition for hospital plumbing systems',
+        icon: '🏥',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/priya-nair',
+      instagram: '@priya_plumbing',
+      behance: 'behance.net/priyanair'
+    },
     projects: [
       {
         title: 'Water Management System',
@@ -384,7 +747,9 @@ const mockProfiles = {
         budget: '$2,00,000',
         timeline: '6 months',
         location: 'Thiruvananthapuram, Kerala',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Residential',
+        tags: ['Water Management', 'Residential Complex', '500 Units']
       },
       {
         title: 'Industrial Wastewater Treatment',
@@ -395,7 +760,9 @@ const mockProfiles = {
         budget: '$1,80,000',
         timeline: '5 months',
         location: 'Coimbatore, Tamil Nadu',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Industrial',
+        tags: ['Wastewater', 'Treatment', 'Textile']
       },
       {
         title: 'Rainwater Harvesting System',
@@ -406,7 +773,9 @@ const mockProfiles = {
         budget: '$95,000',
         timeline: '3 months',
         location: 'Mysore, Karnataka',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Sustainable',
+        tags: ['Rainwater', 'Harvesting', '10 Acres']
       },
       {
         title: 'Swimming Pool Plumbing',
@@ -417,7 +786,9 @@ const mockProfiles = {
         budget: '$75,000',
         timeline: '2 months',
         location: 'Kochi, Kerala',
-        rating: 4.4
+        rating: 4.4,
+        category: 'Recreational',
+        tags: ['Swimming Pool', 'Heated', 'Filtration']
       },
       {
         title: 'Hospital Sanitation System',
@@ -428,7 +799,9 @@ const mockProfiles = {
         budget: '$3,20,000',
         timeline: '4 months',
         location: 'Visakhapatnam, Andhra Pradesh',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Healthcare',
+        tags: ['Hospital', 'Sanitation', 'Infection Control']
       },
       {
         title: 'Commercial Kitchen Plumbing',
@@ -439,7 +812,9 @@ const mockProfiles = {
         budget: '$1,50,000',
         timeline: '3 months',
         location: 'Indore, Madhya Pradesh',
-        rating: 4.3
+        rating: 4.3,
+        category: 'Commercial',
+        tags: ['Kitchen', 'Commercial', 'Grease Traps']
       },
       {
         title: 'Greywater Recycling Plant',
@@ -450,7 +825,9 @@ const mockProfiles = {
         budget: '$1,20,000',
         timeline: '4 months',
         location: 'Puducherry, India',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Sustainable',
+        tags: ['Greywater', 'Recycling', 'Reuse']
       }
     ]
   },
@@ -460,6 +837,55 @@ const mockProfiles = {
     role: 'Construction Manager',
     experience: '9+ years managing large-scale construction projects.',
     avatar: '/vikram-singh.jpg',
+    coverImage: '/shopping mall construction.png',
+    contactInfo: {
+      email: 'vikram.singh@example.com',
+      phone: '+91 98765 43215',
+      website: 'www.vikramconstruction.com',
+      location: 'Gurgaon, Haryana'
+    },
+    stats: {
+      totalProjects: 25,
+      totalEarnings: '$6.8M',
+      completionRate: '95%',
+      responseTime: '< 2 hours'
+    },
+    availability: {
+      status: 'Busy',
+      nextAvailable: '1 Month'
+    },
+    skills: [
+      { name: 'Project Management', level: 98 },
+      { name: 'Large-scale Construction', level: 96 },
+      { name: 'Team Leadership', level: 94 },
+      { name: 'Quality Control', level: 92 },
+      { name: 'Cost Management', level: 90 },
+      { name: 'Safety Management', level: 95 }
+    ],
+    certifications: [
+      { title: 'PMP Certification', year: '2017' },
+      { title: 'Construction Management License', year: '2016' },
+      { title: 'Safety Management Certificate', year: '2018' }
+    ],
+    achievements: [
+      { 
+        title: 'Construction Excellence Award',
+        description: 'Outstanding project delivery record',
+        icon: '🏗️',
+        year: '2023'
+      },
+      { 
+        title: 'Safety Leadership Award',
+        description: 'Zero accident record on large projects',
+        icon: '🛡️',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/vikram-singh',
+      instagram: '@vikram_construction',
+      behance: 'behance.net/vikramsingh'
+    },
     projects: [
       {
         title: 'Shopping Mall Construction',
@@ -470,7 +896,9 @@ const mockProfiles = {
         budget: '$80,00,000',
         timeline: '30 months',
         location: 'Noida, Uttar Pradesh',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Commercial',
+        tags: ['Shopping Mall', '300k sq ft', 'Parking']
       },
       {
         title: 'Residential Township',
@@ -481,7 +909,9 @@ const mockProfiles = {
         budget: '$120,00,000',
         timeline: '36 months',
         location: 'Gurgaon, Haryana',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Residential',
+        tags: ['Township', '5000 Units', 'Gated Community']
       },
       {
         title: 'Hotel & Spa Complex',
@@ -492,7 +922,9 @@ const mockProfiles = {
         budget: '$45,00,000',
         timeline: '24 months',
         location: 'Udaipur, Rajasthan',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Hospitality',
+        tags: ['Hotel', 'Spa', '5-star']
       },
       {
         title: 'Industrial Warehouse',
@@ -503,7 +935,9 @@ const mockProfiles = {
         budget: '$25,00,000',
         timeline: '18 months',
         location: 'Faridabad, Haryana',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Industrial',
+        tags: ['Warehouse', 'Automated', '200k sq ft']
       },
       {
         title: 'Sports Stadium Construction',
@@ -514,7 +948,9 @@ const mockProfiles = {
         budget: '$150,00,000',
         timeline: '42 months',
         location: 'Mohali, Punjab',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Sports',
+        tags: ['Stadium', '60000 Seats', 'Retractable Roof']
       },
       {
         title: 'Educational Institution',
@@ -525,7 +961,9 @@ const mockProfiles = {
         budget: '$65,00,000',
         timeline: '30 months',
         location: 'Dehradun, Uttarakhand',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Educational',
+        tags: ['University', 'Campus', '15 Buildings']
       },
       {
         title: 'Mixed-Use Skyscraper',
@@ -536,7 +974,9 @@ const mockProfiles = {
         budget: '$200,00,000',
         timeline: '48 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Mixed-use',
+        tags: ['Skyscraper', '75 Stories', 'Mixed-use']
       }
     ]
   },
@@ -546,6 +986,55 @@ const mockProfiles = {
     role: 'Landscape Architect',
     experience: '5+ years in sustainable landscape design.',
     avatar: '/meera-patel.jpg',
+    coverImage: '/m1.png',
+    contactInfo: {
+      email: 'meera.patel@example.com',
+      phone: '+91 98765 43216',
+      website: 'www.meeralandscape.com',
+      location: 'Ahmedabad, Gujarat'
+    },
+    stats: {
+      totalProjects: 38,
+      totalEarnings: '$2.1M',
+      completionRate: '96%',
+      responseTime: '< 2 hours'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'Next Week'
+    },
+    skills: [
+      { name: 'Landscape Design', level: 94 },
+      { name: 'Sustainable Practices', level: 92 },
+      { name: 'Plant Selection', level: 90 },
+      { name: 'Urban Planning', level: 87 },
+      { name: 'Water Features', level: 89 },
+      { name: 'Green Infrastructure', level: 91 }
+    ],
+    certifications: [
+      { title: 'Landscape Architecture License', year: '2019' },
+      { title: 'Sustainable Design Certification', year: '2020' },
+      { title: 'Urban Planning Certificate', year: '2021' }
+    ],
+    achievements: [
+      { 
+        title: 'Green Design Excellence',
+        description: 'Recognition for sustainable landscape projects',
+        icon: '🌱',
+        year: '2023'
+      },
+      { 
+        title: 'Urban Green Initiative Leader',
+        description: 'Leadership in urban greening projects',
+        icon: '🌳',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/meera-patel',
+      instagram: '@meera_landscape',
+      behance: 'behance.net/meerapatel'
+    },
     projects: [
       {
         title: 'Urban Park Design',
@@ -556,7 +1045,9 @@ const mockProfiles = {
         budget: '$3,50,000',
         timeline: '12 months',
         location: 'Surat, Gujarat',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Public Space',
+        tags: ['Urban Park', '25 Acres', 'Sustainable']
       },
       {
         title: 'Corporate Campus Landscaping',
@@ -567,7 +1058,9 @@ const mockProfiles = {
         budget: '$2,80,000',
         timeline: '10 months',
         location: 'Hyderabad, Telangana',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Corporate',
+        tags: ['Corporate', 'Campus', 'Tech Company']
       },
       {
         title: 'Residential Garden Design',
@@ -578,7 +1071,9 @@ const mockProfiles = {
         budget: '$1,20,000',
         timeline: '6 months',
         location: 'Chennai, Tamil Nadu',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Residential',
+        tags: ['Rooftop Garden', 'Water Features', 'Private']
       },
       {
         title: 'Botanical Garden Masterplan',
@@ -589,7 +1084,9 @@ const mockProfiles = {
         budget: '$15,00,000',
         timeline: '24 months',
         location: 'Mysore, Karnataka',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Botanical',
+        tags: ['Botanical Garden', '200 Acres', 'Themed']
       },
       {
         title: 'Green Roof Installation',
@@ -600,7 +1097,9 @@ const mockProfiles = {
         budget: '$95,000',
         timeline: '4 months',
         location: 'Pune, Maharashtra',
-        rating: 4.4
+        rating: 4.4,
+        category: 'Green Infrastructure',
+        tags: ['Green Roof', 'Vegetated', 'Commercial']
       },
       {
         title: 'Hospital Healing Garden',
@@ -611,7 +1110,9 @@ const mockProfiles = {
         budget: '$1,80,000',
         timeline: '8 months',
         location: 'Ahmedabad, Gujarat',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Healthcare',
+        tags: ['Healing Garden', 'Therapeutic', 'Hospital']
       },
       {
         title: 'Public Plaza Revitalization',
@@ -622,7 +1123,9 @@ const mockProfiles = {
         budget: '$2,20,000',
         timeline: '9 months',
         location: 'Jaipur, Rajasthan',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Urban Revitalization',
+        tags: ['Public Plaza', 'Historic', 'Native Plants']
       }
     ]
   },
@@ -632,6 +1135,55 @@ const mockProfiles = {
     role: 'HVAC Engineer',
     experience: '7+ years in heating and cooling systems.',
     avatar: '/arjun-reddy.jpg',
+    coverImage: '/a1.png',
+    contactInfo: {
+      email: 'arjun.reddy@example.com',
+      phone: '+91 98765 43217',
+      website: 'www.arjunhvac.com',
+      location: 'Hyderabad, Telangana'
+    },
+    stats: {
+      totalProjects: 40,
+      totalEarnings: '$2.8M',
+      completionRate: '97%',
+      responseTime: '< 1 hour'
+    },
+    availability: {
+      status: 'Available',
+      nextAvailable: 'This Week'
+    },
+    skills: [
+      { name: 'HVAC Design', level: 96 },
+      { name: 'Energy Efficiency', level: 93 },
+      { name: 'Smart Controls', level: 90 },
+      { name: 'Industrial Systems', level: 92 },
+      { name: 'Data Center Cooling', level: 95 },
+      { name: 'Geothermal Systems', level: 88 }
+    ],
+    certifications: [
+      { title: 'HVAC Professional License', year: '2018' },
+      { title: 'Energy Efficiency Certification', year: '2019' },
+      { title: 'Data Center Cooling Specialist', year: '2021' }
+    ],
+    achievements: [
+      { 
+        title: 'Energy Efficiency Champion',
+        description: 'Recognition for energy-saving HVAC designs',
+        icon: '❄️',
+        year: '2023'
+      },
+      { 
+        title: 'Innovation in Cooling',
+        description: 'Advanced cooling system solutions',
+        icon: '🔧',
+        year: '2022'
+      }
+    ],
+    socialMedia: {
+      linkedin: 'linkedin.com/in/arjun-reddy',
+      instagram: '@arjun_hvac',
+      behance: 'behance.net/arjunreddy'
+    },
     projects: [
       {
         title: 'Smart HVAC Installation',
@@ -642,7 +1194,9 @@ const mockProfiles = {
         budget: '$8,00,000',
         timeline: '6 months',
         location: 'Hyderabad, Telangana',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Commercial',
+        tags: ['Smart HVAC', 'Energy Efficient', 'Corporate']
       },
       {
         title: 'Data Center Cooling System',
@@ -653,7 +1207,9 @@ const mockProfiles = {
         budget: '$12,00,000',
         timeline: '8 months',
         location: 'Noida, Uttar Pradesh',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Data Center',
+        tags: ['Data Center', 'Precision Cooling', 'Tier-4']
       },
       {
         title: 'Hospital HVAC System',
@@ -664,7 +1220,9 @@ const mockProfiles = {
         budget: '$6,50,000',
         timeline: '7 months',
         location: 'Chennai, Tamil Nadu',
-        rating: 4.9
+        rating: 4.9,
+        category: 'Healthcare',
+        tags: ['Hospital', 'Operating Theater', 'Specialized']
       },
       {
         title: 'Industrial Process Cooling',
@@ -675,7 +1233,9 @@ const mockProfiles = {
         budget: '$4,20,000',
         timeline: '5 months',
         location: 'Vadodara, Gujarat',
-        rating: 4.6
+        rating: 4.6,
+        category: 'Industrial',
+        tags: ['Industrial', 'Process Cooling', 'Pharmaceutical']
       },
       {
         title: 'Residential Geothermal System',
@@ -686,7 +1246,9 @@ const mockProfiles = {
         budget: '$2,80,000',
         timeline: '4 months',
         location: 'Bangalore, Karnataka',
-        rating: 4.7
+        rating: 4.7,
+        category: 'Residential',
+        tags: ['Geothermal', 'Heat Pump', 'Luxury Villa']
       },
       {
         title: 'Airport Terminal HVAC',
@@ -697,7 +1259,9 @@ const mockProfiles = {
         budget: '$25,00,000',
         timeline: '12 months',
         location: 'Kochi, Kerala',
-        rating: 4.8
+        rating: 4.8,
+        category: 'Aviation',
+        tags: ['Airport', 'Terminal', 'International']
       },
       {
         title: 'Cold Storage Facility',
@@ -708,11 +1272,408 @@ const mockProfiles = {
         budget: '$3,50,000',
         timeline: '6 months',
         location: 'Mumbai, Maharashtra',
-        rating: 4.5
+        rating: 4.5,
+        category: 'Industrial',
+        tags: ['Cold Storage', 'Food Products', 'Warehouse']
       }
     ]
   }
 };
+
+// Tab components for enhanced content
+const TabContainer = styled.div`
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 30px;
+  animation: ${fadeIn} 0.6s ease-out;
+`;
+
+const Tab = styled.button`
+  padding: 15px 30px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${props => props.active ? '#007bff' : '#666'};
+  border-bottom: 3px solid ${props => props.active ? '#007bff' : 'transparent'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  animation: ${props => props.active ? css`${slideInLeft} 0.3s ease-out` : 'none'};
+
+  &:hover {
+    color: #007bff;
+    background: #f8f9fa;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: ${props => props.active ? '100%' : '0'};
+    height: 3px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    transition: width 0.3s ease;
+  }
+`;
+
+const TabContent = styled.div`
+  animation: ${fadeIn} 0.5s ease-out;
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+  animation: ${slideInLeft} 0.6s ease-out;
+`;
+
+const StatCard = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.7s ease-out;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  }
+`;
+
+const StatValue = styled.div`
+  font-size: 32px;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 8px;
+  animation: ${pulse} 2s infinite;
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+`;
+
+const SkillsSection = styled.div`
+  margin: 40px 0;
+  animation: ${slideInRight} 0.6s ease-out;
+`;
+
+const SkillsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const SkillItem = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.8s ease-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+`;
+
+const SkillName = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+`;
+
+const SkillBar = styled.div`
+  width: 100%;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const SkillProgress = styled.div`
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-radius: 4px;
+  transition: width 1s ease;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: ${shimmer} 2s infinite;
+  }
+`;
+
+const SkillLevel = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+`;
+
+const CertificationsSection = styled.div`
+  margin: 40px 0;
+  animation: ${slideInLeft} 0.6s ease-out;
+`;
+
+const CertificationsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const CertificationCard = styled.div`
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.7s ease-out;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  }
+`;
+
+const CertificationTitle = styled.div`
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+`;
+
+const CertificationYear = styled.div`
+  font-size: 14px;
+  color: #007bff;
+  font-weight: 600;
+`;
+
+const AchievementsSection = styled.div`
+  margin: 40px 0;
+  animation: ${slideInRight} 0.6s ease-out;
+`;
+
+const AchievementsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+`;
+
+const AchievementCard = styled.div`
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.8s ease-out;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #0056b3, #007bff);
+    animation: ${shimmer} 3s infinite;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+`;
+
+const AchievementIcon = styled.div`
+  font-size: 48px;
+  margin-bottom: 15px;
+  animation: ${float} 3s ease-in-out infinite;
+`;
+
+const AchievementTitle = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+`;
+
+const AchievementDescription = styled.div`
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 12px;
+`;
+
+const AchievementYear = styled.div`
+  font-size: 12px;
+  color: #007bff;
+  font-weight: 600;
+`;
+
+const ContactInfoSection = styled.div`
+  margin: 30px 0;
+  animation: ${slideInLeft} 0.6s ease-out;
+`;
+
+const ContactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const ContactItem = styled.div`
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  animation: ${fadeIn} 0.7s ease-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+`;
+
+const ContactIcon = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+`;
+
+const ContactDetails = styled.div`
+  flex: 1;
+`;
+
+const ContactLabel = styled.div`
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const ContactValue = styled.div`
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+`;
+
+const SocialMediaSection = styled.div`
+  margin: 30px 0;
+  animation: ${slideInRight} 0.6s ease-out;
+`;
+
+const SocialLinks = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+`;
+
+const SocialLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+  animation: ${fadeIn} 0.8s ease-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+    background: linear-gradient(135deg, #0056b3, #004494);
+  }
+`;
+
+const AvailabilityBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: ${props => props.status === 'Available' ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #fd7e14, #e83e8c)'};
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 10px 0;
+  animation: ${pulse} 2s infinite;
+`;
+
+const AvailabilityDot = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+  animation: ${pulse} 1.5s infinite;
+`;
+
+const FilterButtons = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  animation: ${fadeIn} 0.6s ease-out;
+`;
+
+const FilterButton2 = styled.button`
+  padding: 8px 20px;
+  background: ${props => props.active ? 'linear-gradient(135deg, #007bff, #0056b3)' : '#f8f9fa'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border: 2px solid ${props => props.active ? '#007bff' : '#e9ecef'};
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: ${props => props.active ? css`${slideInLeft} 0.3s ease-out` : 'none'};
+
+  &:hover {
+    background: ${props => props.active ? 'linear-gradient(135deg, #0056b3, #004494)' : '#e9ecef'};
+    transform: translateY(-1px);
+  }
+`;
 
 const ProfilePage = () => {
   const { userId } = useParams();
@@ -721,6 +1682,8 @@ const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [projectFilter, setProjectFilter] = useState('All');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -769,17 +1732,232 @@ const ProfilePage = () => {
   // Get other unique profiles (excluding current profile)
   const otherProfiles = Object.values(mockProfiles).filter(p => p.id !== profile.id);
 
+  // Get unique categories for filtering
+  const categories = ['All', ...Array.from(new Set(profile.projects.map(proj => proj.category)))];
+
+  // Filter projects based on selected category
+  const filteredProjects = projectFilter === 'All' 
+    ? profile.projects 
+    : profile.projects.filter(proj => proj.category === projectFilter);
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <TabContent>
+            {/* Contact Information */}
+            <ContactInfoSection>
+              <SectionTitle>Contact Information</SectionTitle>
+              <ContactGrid>
+                <ContactItem>
+                  <ContactIcon>📧</ContactIcon>
+                  <ContactDetails>
+                    <ContactLabel>Email</ContactLabel>
+                    <ContactValue>{profile.contactInfo.email}</ContactValue>
+                  </ContactDetails>
+                </ContactItem>
+                <ContactItem>
+                  <ContactIcon>📱</ContactIcon>
+                  <ContactDetails>
+                    <ContactLabel>Phone</ContactLabel>
+                    <ContactValue>{profile.contactInfo.phone}</ContactValue>
+                  </ContactDetails>
+                </ContactItem>
+                <ContactItem>
+                  <ContactIcon>🌐</ContactIcon>
+                  <ContactDetails>
+                    <ContactLabel>Website</ContactLabel>
+                    <ContactValue>{profile.contactInfo.website}</ContactValue>
+                  </ContactDetails>
+                </ContactItem>
+                <ContactItem>
+                  <ContactIcon>📍</ContactIcon>
+                  <ContactDetails>
+                    <ContactLabel>Location</ContactLabel>
+                    <ContactValue>{profile.contactInfo.location}</ContactValue>
+                  </ContactDetails>
+                </ContactItem>
+              </ContactGrid>
+            </ContactInfoSection>
+
+            {/* Performance Stats */}
+            <StatsSection>
+              <SectionTitle>Performance Stats</SectionTitle>
+              <StatsGrid>
+                <StatCard>
+                  <StatValue>{profile.stats.totalProjects}</StatValue>
+                  <StatLabel>Total Projects</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{profile.stats.totalEarnings}</StatValue>
+                  <StatLabel>Total Earnings</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{profile.stats.completionRate}</StatValue>
+                  <StatLabel>Completion Rate</StatLabel>
+                </StatCard>
+                <StatCard>
+                  <StatValue>{profile.stats.responseTime}</StatValue>
+                  <StatLabel>Response Time</StatLabel>
+                </StatCard>
+              </StatsGrid>
+            </StatsSection>
+
+            {/* Availability Status */}
+            <AvailabilityBadge status={profile.availability.status}>
+              <AvailabilityDot />
+              {profile.availability.status} - {profile.availability.nextAvailable}
+            </AvailabilityBadge>
+
+            {/* Social Media Links */}
+            <SocialMediaSection>
+              <SectionTitle>Connect With Me</SectionTitle>
+              <SocialLinks>
+                <SocialLink href={`https://${profile.socialMedia.linkedin}`} target="_blank">
+                  💼 LinkedIn
+                </SocialLink>
+                <SocialLink href={`https://instagram.com/${profile.socialMedia.instagram.replace('@', '')}`} target="_blank">
+                  📷 Instagram
+                </SocialLink>
+                <SocialLink href={`https://${profile.socialMedia.behance}`} target="_blank">
+                  🎨 Behance
+                </SocialLink>
+              </SocialLinks>
+            </SocialMediaSection>
+          </TabContent>
+        );
+
+      case 'projects':
+        return (
+          <TabContent>
+            <FilterButtons>
+              {categories.map(category => (
+                <FilterButton2
+                  key={category}
+                  active={projectFilter === category}
+                  onClick={() => setProjectFilter(category)}
+                >
+                  {category}
+                </FilterButton2>
+              ))}
+            </FilterButtons>
+            <ProjectsGrid>
+              {filteredProjects.length > 0 ? (
+                filteredProjects.map((proj, i) => (
+                  <ProjectCard key={i}>
+                    <ProjectImage src={proj.image} alt={proj.title} />
+                    <ProjectContent>
+                      <ProjectHeader>
+                        <ProjectTitle>{proj.title}</ProjectTitle>
+                        <ProjectCategory>{proj.category}</ProjectCategory>
+                      </ProjectHeader>
+                      <ProjectDescription>{proj.description}</ProjectDescription>
+                      <ProjectTags>
+                        {proj.tags.map((tag, index) => (
+                          <ProjectTag key={index}>{tag}</ProjectTag>
+                        ))}
+                      </ProjectTags>
+                      <ProjectDetails>
+                        <DetailItem>
+                          <DetailLabel>Budget:</DetailLabel>
+                          <DetailValue>{proj.budget}</DetailValue>
+                        </DetailItem>
+                        <DetailItem>
+                          <DetailLabel>Timeline:</DetailLabel>
+                          <DetailValue>{proj.timeline}</DetailValue>
+                        </DetailItem>
+                        <DetailItem>
+                          <DetailLabel>Location:</DetailLabel>
+                          <DetailValue>{proj.location}</DetailValue>
+                        </DetailItem>
+                        <DetailItem>
+                          <DetailLabel>Rating:</DetailLabel>
+                          <RatingValue>{proj.rating} ⭐</RatingValue>
+                        </DetailItem>
+                      </ProjectDetails>
+                      <ProjectStatus>
+                        <StatusDot color={proj.color} />
+                        <StatusText color={proj.color}>{proj.status}</StatusText>
+                      </ProjectStatus>
+                    </ProjectContent>
+                  </ProjectCard>
+                ))
+              ) : (
+                <NoProjectsCard>
+                  <p>No projects found in this category.</p>
+                </NoProjectsCard>
+              )}
+            </ProjectsGrid>
+          </TabContent>
+        );
+
+      case 'skills':
+        return (
+          <TabContent>
+            <SkillsSection>
+              <SectionTitle>Skills & Expertise</SectionTitle>
+              <SkillsGrid>
+                {profile.skills.map((skill, index) => (
+                  <SkillItem key={index}>
+                    <SkillName>{skill.name}</SkillName>
+                    <SkillBar>
+                      <SkillProgress style={{ width: `${skill.level}%` }} />
+                    </SkillBar>
+                    <SkillLevel>{skill.level}%</SkillLevel>
+                  </SkillItem>
+                ))}
+              </SkillsGrid>
+            </SkillsSection>
+          </TabContent>
+        );
+
+      case 'achievements':
+        return (
+          <TabContent>
+            <CertificationsSection>
+              <SectionTitle>Certifications</SectionTitle>
+              <CertificationsGrid>
+                {profile.certifications.map((cert, index) => (
+                  <CertificationCard key={index}>
+                    <CertificationTitle>{cert.title}</CertificationTitle>
+                    <CertificationYear>{cert.year}</CertificationYear>
+                  </CertificationCard>
+                ))}
+              </CertificationsGrid>
+            </CertificationsSection>
+
+            <AchievementsSection>
+              <SectionTitle>Achievements</SectionTitle>
+              <AchievementsGrid>
+                {profile.achievements.map((achievement, index) => (
+                  <AchievementCard key={index}>
+                    <AchievementIcon>{achievement.icon}</AchievementIcon>
+                    <AchievementTitle>{achievement.title}</AchievementTitle>
+                    <AchievementDescription>{achievement.description}</AchievementDescription>
+                    <AchievementYear>{achievement.year}</AchievementYear>
+                  </AchievementCard>
+                ))}
+              </AchievementsGrid>
+            </AchievementsSection>
+          </TabContent>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <Container>
       {/* NAVBAR - Same as HomePage with Back Button */}
       <Header>
         <LeftSection>
-        <BackButton onClick={() => navigate('/homepage')}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Back to Dashboard
-        </BackButton>
+          <BackButton onClick={() => navigate('/homepage')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Back to Dashboard
+          </BackButton>
           <LogoSection>
             <LogoIcon>
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -836,8 +2014,9 @@ const ProfilePage = () => {
 
       {/* Main Content */}
       <MainContent>
-        {/* Profile Card */}
+        {/* Enhanced Profile Card with Cover Image */}
         <ProfileCard>
+          <CoverImage src={profile.coverImage} alt="Cover" />
           <ProfileHeader>
             <AvatarSection>
               <ProfileAvatar src={profile.avatar} alt={profile.name} />
@@ -849,11 +2028,9 @@ const ProfilePage = () => {
             </ProfileInfo>
             <ProfileActions>
               <PortfolioButton>Portfolio</PortfolioButton>
-              {/* New Compare Button */}
               <CompareButton onClick={() => navigate('/compare')}>
                 Compare with Other Profiles
               </CompareButton>
-              {/* Keep the chat icon if needed, or remove it */}
               <IconCircle>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                   <g fill="none">
@@ -866,47 +2043,24 @@ const ProfilePage = () => {
           </ProfileHeader>
         </ProfileCard>
 
-        {/* Projects Section */}
-        <SectionTitle>Projects ({profile.projects.length})</SectionTitle>
-        <ProjectsGrid>
-          {profile.projects.length > 0 ? (
-            profile.projects.map((proj, i) => (
-              <ProjectCard key={i}>
-                <ProjectImage src={proj.image} alt={proj.title} />
-                <ProjectContent>
-                  <ProjectTitle>{proj.title}</ProjectTitle>
-                  <ProjectDescription>{proj.description}</ProjectDescription>
-                  <ProjectDetails>
-                    <DetailItem>
-                      <DetailLabel>Budget:</DetailLabel>
-                      <DetailValue>{proj.budget}</DetailValue>
-                    </DetailItem>
-                    <DetailItem>
-                      <DetailLabel>Timeline:</DetailLabel>
-                      <DetailValue>{proj.timeline}</DetailValue>
-                    </DetailItem>
-                    <DetailItem>
-                      <DetailLabel>Location:</DetailLabel>
-                      <DetailValue>{proj.location}</DetailValue>
-                    </DetailItem>
-                    <DetailItem>
-                      <DetailLabel>Rating:</DetailLabel>
-                      <RatingValue>{proj.rating} ⭐</RatingValue>
-                    </DetailItem>
-                  </ProjectDetails>
-                  <ProjectStatus>
-                    <StatusDot color={proj.color} />
-                    <StatusText color={proj.color}>{proj.status}</StatusText>
-                  </ProjectStatus>
-                </ProjectContent>
-              </ProjectCard>
-            ))
-          ) : (
-            <NoProjectsCard>
-              <p>No projects available for this professional.</p>
-            </NoProjectsCard>
-          )}
-        </ProjectsGrid>
+        {/* Enhanced Navigation Tabs */}
+        <TabContainer>
+          <Tab active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+            Overview
+          </Tab>
+          <Tab active={activeTab === 'projects'} onClick={() => setActiveTab('projects')}>
+            Projects ({profile.projects.length})
+          </Tab>
+          <Tab active={activeTab === 'skills'} onClick={() => setActiveTab('skills')}>
+            Skills
+          </Tab>
+          <Tab active={activeTab === 'achievements'} onClick={() => setActiveTab('achievements')}>
+            Achievements
+          </Tab>
+        </TabContainer>
+
+        {/* Tab Content */}
+        {renderTabContent()}
 
         {/* More Profiles */}
         <SectionTitle>More Professionals</SectionTitle>
@@ -925,7 +2079,7 @@ const ProfilePage = () => {
   );
 };
 
-// --- STYLED COMPONENTS WITH ANIMATIONS ---
+// --- STYLED COMPONENTS WITH ENHANCED ANIMATIONS ---
 const Container = styled.div`
   background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
   min-height: 100vh;
@@ -944,6 +2098,7 @@ const Header = styled.div`
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   margin: 0 0 20px 0;
   transition: all 0.3s ease;
+  animation: ${slideInLeft} 0.6s ease-out;
   &:hover {
     box-shadow: 0 8px 28px rgba(0,0,0,0.12);
     transform: translateY(-1px);
@@ -968,14 +2123,16 @@ const BackButton = styled.button`
   color: #555;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-decoration: none;        /* Ensures no underline */
-  outline: none;                /* Removes blue focus ring */
+  text-decoration: none;
+  outline: none;
+  animation: ${fadeIn} 0.5s ease-out;
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
+    transform: translateY(-1px);
   }
   &:focus {
-    outline: none;              /* Critical: removes blue focus outline */
+    outline: none;
     box-shadow: none;
   }
 `;
@@ -1027,6 +2184,7 @@ const SearchBar = styled.input`
   outline: none;
   transition: all 0.3s ease;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  animation: ${slideInLeft} 0.7s ease-out;
   &::placeholder {
     color: #aaa;
   }
@@ -1051,6 +2209,7 @@ const FilterButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  animation: ${slideInLeft} 0.8s ease-out;
   &:hover {
     background: #ebebeb;
     border-color: #d0d0d0;
@@ -1078,6 +2237,7 @@ const IconCircle = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  animation: ${fadeIn} 0.9s ease-out;
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -1111,6 +2271,7 @@ const UserDropdown = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  animation: ${slideInRight} 1s ease-out;
   &:hover {
     border-color: #d0d0d0;
     background: #f9f9f9;
@@ -1206,14 +2367,37 @@ const ProfileCard = styled.div`
   background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
   border-radius: 20px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  padding: 30px;
+  padding: 0;
   margin-bottom: 30px;
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
   animation: ${fadeIn} 0.5s ease-out;
+  overflow: hidden;
+  position: relative;
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+`;
+
+const CoverImage = styled.div`
+  width: 100%;
+  height: 200px;
+  background-image: url(${props => props.src});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  animation: ${fadeIn} 0.7s ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(0,123,255,0.1), rgba(0,86,179,0.1));
   }
 `;
 
@@ -1222,11 +2406,19 @@ const ProfileHeader = styled.div`
   grid-template-columns: 120px 1fr auto;
   gap: 20px;
   align-items: flex-start;
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.95) 100%);
+  position: relative;
+  z-index: 2;
+  margin-top: -60px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
 `;
 
 const AvatarSection = styled.div`
   display: flex;
   justify-content: center;
+  position: relative;
 `;
 
 const ProfileAvatar = styled.img`
@@ -1299,10 +2491,9 @@ const PortfolioButton = styled.button`
   }
 `;
 
-// --- NEW: Compare Button Styled Component ---
 const CompareButton = styled.button`
   padding: 12px 24px;
-  background: linear-gradient(135deg, #28a745 0%, #218838 100%);  /* Green gradient */
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -1310,12 +2501,12 @@ const CompareButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);  /* Green shadow */
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
   animation: ${fadeIn} 1s ease-out;
-  margin-bottom: 10px;  /* Add space between buttons */
+  margin-bottom: 10px;
 
   &:hover {
-    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);  /* Darker green on hover */
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
   }
@@ -1345,6 +2536,11 @@ const SectionTitle = styled.h2`
   margin: 40px 0 20px 0;
   letter-spacing: -0.2px;
   animation: ${fadeIn} 0.5s ease-out;
+`;
+
+const StatsSection = styled.div`
+  margin: 40px 0;
+  animation: ${slideInRight} 0.6s ease-out;
 `;
 
 const ProjectsGrid = styled.div`
@@ -1383,12 +2579,31 @@ const ProjectContent = styled.div`
   padding: 20px;
 `;
 
+const ProjectHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  animation: ${fadeIn} 0.8s ease-out;
+`;
+
 const ProjectTitle = styled.h3`
   font-size: 18px;
   font-weight: 700;
   color: #333;
-  margin: 0 0 10px 0;
-  animation: ${fadeIn} 0.8s ease-out;
+  margin: 0;
+  flex: 1;
+`;
+
+const ProjectCategory = styled.span`
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 10px;
+  white-space: nowrap;
 `;
 
 const ProjectDescription = styled.p`
@@ -1397,6 +2612,30 @@ const ProjectDescription = styled.p`
   line-height: 1.5;
   margin: 0 0 15px 0;
   animation: ${fadeIn} 0.9s ease-out;
+`;
+
+const ProjectTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+  animation: ${slideInLeft} 1s ease-out;
+`;
+
+const ProjectTag = styled.span`
+  background: #f8f9fa;
+  color: #007bff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+
+  ${ProjectCard}:hover & {
+    background: #007bff;
+    color: white;
+  }
 `;
 
 const ProjectDetails = styled.div`

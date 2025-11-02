@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
 
-// Enhanced mock data with all professionals
+// Enhanced mock data with 28 professionals (original 8 + 20 new Interior Designers)
 const allProfiles = {
   '1': {
     id: '1',
@@ -699,6 +699,1748 @@ const allProfiles = {
         rating: 4.5
       }
     ]
+  },
+
+  // 20 Additional Interior Designer Profiles
+  '9': {
+    id: '9',
+    name: 'Sneha Gupta',
+    role: 'Interior Designer',
+    experience: '6+ years specializing in luxury residential interiors and contemporary styling.',
+    avatar: '/sneha-gupta.jpg',
+    rating: 4.6,
+    projects: [
+      {
+        title: 'Penthouse Renovation (Delhi)',
+        image: '/penthouse-renovation.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Luxury penthouse with floor-to-ceiling windows and premium finishes.',
+        budget: '$8,50,000',
+        timeline: '14 months',
+        location: 'New Delhi, India',
+        rating: 4.8
+      },
+      {
+        title: 'Boutique Hotel Design',
+        image: '/boutique-hotel.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: '30-room boutique hotel with local art integration.',
+        budget: '$6,20,000',
+        timeline: '10 months',
+        location: 'Udaipur, Rajasthan',
+        rating: 4.7
+      },
+      {
+        title: 'Tech Startup Office',
+        image: '/tech-office.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Open-plan workspace with collaboration zones.',
+        budget: '$3,40,000',
+        timeline: '6 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.5
+      },
+      {
+        title: 'Traditional Home Makeover',
+        image: '/traditional-home.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Blend of traditional and modern elements.',
+        budget: '$2,80,000',
+        timeline: '8 months',
+        location: 'Lucknow, Uttar Pradesh',
+        rating: 4.6
+      },
+      {
+        title: 'Coffee Shop Chain Design',
+        image: '/coffee-shop.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Cozy cafe design for multiple locations.',
+        budget: '$4,50,000',
+        timeline: '12 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.4
+      },
+      {
+        title: 'Villa Interior Design',
+        image: '/villa-interior.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Mediterranean-style villa with smart home features.',
+        budget: '$12,00,000',
+        timeline: '16 months',
+        location: 'Goa, India',
+        rating: 4.9
+      },
+      {
+        title: 'Apartment Complex Common Areas',
+        image: '/apartment-common.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Modern lobby and recreational spaces.',
+        budget: '$5,60,000',
+        timeline: '9 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      }
+    ]
+  },
+  '10': {
+    id: '10',
+    name: 'Rohit Jain',
+    role: 'Interior Designer',
+    experience: '9+ years in commercial and retail space design with sustainable practices.',
+    avatar: '/rohit-jain.jpg',
+    rating: 4.7,
+    projects: [
+      {
+        title: 'Shopping Mall Interior',
+        image: '/shopping-mall.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '300,000 sq ft mall with contemporary design.',
+        budget: '$15,00,000',
+        timeline: '18 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.8
+      },
+      {
+        title: 'Corporate Headquarters',
+        image: '/corporate-hq.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'LEED-certified office space for tech company.',
+        budget: '$10,50,000',
+        timeline: '15 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.7
+      },
+      {
+        title: 'Luxury Retail Store',
+        image: '/luxury-retail.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'High-end fashion store with premium finishes.',
+        budget: '$2,80,000',
+        timeline: '5 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.9
+      },
+      {
+        title: 'Residential Community Center',
+        image: '/community-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Modern amenities center for gated community.',
+        budget: '$6,40,000',
+        timeline: '11 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.5
+      },
+      {
+        title: 'Restaurant Chain Design',
+        image: '/restaurant-chain.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Consistent design for 15 restaurant locations.',
+        budget: '$7,20,000',
+        timeline: '14 months',
+        location: 'Multiple Cities',
+        rating: 4.6
+      },
+      {
+        title: 'Co-working Space',
+        image: '/coworking-space.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Flexible workspace with modern amenities.',
+        budget: '$4,20,000',
+        timeline: '7 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Wellness Center',
+        image: '/wellness-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Spa and fitness center with calming design.',
+        budget: '$5,80,000',
+        timeline: '9 months',
+        location: 'Kochi, Kerala',
+        rating: 4.8
+      }
+    ]
+  },
+  '11': {
+    id: '11',
+    name: 'Anjali Sharma',
+    role: 'Interior Designer',
+    experience: '7+ years specializing in residential interior design with focus on space optimization.',
+    avatar: '/anjali-sharma.jpg',
+    rating: 4.5,
+    projects: [
+      {
+        title: 'Compact Studio Design',
+        image: '/compact-studio.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '300 sq ft studio with intelligent storage solutions.',
+        budget: '$1,20,000',
+        timeline: '3 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Family Home Renovation',
+        image: '/family-home.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: '4BHK family home with child-friendly design.',
+        budget: '$4,80,000',
+        timeline: '8 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.4
+      },
+      {
+        title: 'Elderly-Friendly Home',
+        image: '/elderly-friendly.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Barrier-free design for senior citizens.',
+        budget: '$2,60,000',
+        timeline: '6 months',
+        location: 'Chandigarh, India',
+        rating: 4.7
+      },
+      {
+        title: 'Young Professional Apartment',
+        image: '/young-professional.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Stylish 1BHK with smart storage.',
+        budget: '$1,80,000',
+        timeline: '4 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.5
+      },
+      {
+        title: 'Home Office Setup',
+        image: '/home-office.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Dedicated workspace for remote work.',
+        budget: '$85,000',
+        timeline: '2 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.3
+      },
+      {
+        title: 'Vintage Style Apartment',
+        image: '/vintage-apartment.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '1940s-inspired design with modern amenities.',
+        budget: '$3,20,000',
+        timeline: '7 months',
+        location: 'Kolkata, West Bengal',
+        rating: 4.8
+      },
+      {
+        title: 'Minimalist Bedroom Design',
+        image: '/minimalist-bedroom.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Zen-inspired bedroom with natural materials.',
+        budget: '$1,50,000',
+        timeline: '3 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.4
+      }
+    ]
+  },
+  '12': {
+    id: '12',
+    name: 'Vikram Patel',
+    role: 'Interior Designer',
+    experience: '11+ years in hospitality and luxury residential design projects.',
+    avatar: '/vikram-patel.jpg',
+    rating: 4.9,
+    projects: [
+      {
+        title: '5-Star Resort Design',
+        image: '/5star-resort.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Luxury beachfront resort with 200 rooms.',
+        budget: '$45,00,000',
+        timeline: '24 months',
+        location: 'Goa, India',
+        rating: 4.9
+      },
+      {
+        title: 'Heritage Hotel Restoration',
+        image: '/heritage-hotel.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '200-year-old palace converted to boutique hotel.',
+        budget: '$28,00,000',
+        timeline: '20 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.8
+      },
+      {
+        title: 'Mansion Interior Design',
+        image: '/mansion-interior.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '25,000 sq ft mansion with classical design.',
+        budget: '$35,00,000',
+        timeline: '30 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.9
+      },
+      {
+        title: 'Luxury Yacht Interior',
+        image: '/luxury-yacht.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '150-foot yacht with premium finishes.',
+        budget: '$12,00,000',
+        timeline: '8 months',
+        location: 'Mumbai Harbour',
+        rating: 4.8
+      },
+      {
+        title: 'Business Class Lounge',
+        image: '/business-lounge.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Airport lounge with exclusive amenities.',
+        budget: '$8,50,000',
+        timeline: '12 months',
+        location: 'Delhi, India',
+        rating: 4.7
+      },
+      {
+        title: 'Private Club Design',
+        image: '/private-club.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Elite members club with fine dining.',
+        budget: '$18,00,000',
+        timeline: '16 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.9
+      },
+      {
+        title: 'Chartered Flight Interior',
+        image: '/chartered-flight.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Private jet cabin redesign.',
+        budget: '$3,20,000',
+        timeline: '4 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.8
+      }
+    ]
+  },
+  '13': {
+    id: '13',
+    name: 'Priya Verma',
+    role: 'Interior Designer',
+    experience: '5+ years in eco-friendly and sustainable interior design solutions.',
+    avatar: '/priya-verma.jpg',
+    rating: 4.6,
+    projects: [
+      {
+        title: 'Green Building Interiors',
+        image: '/green-building.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'LEED Platinum certified office building.',
+        budget: '$6,80,000',
+        timeline: '12 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.8
+      },
+      {
+        title: 'Solar-Powered Home',
+        image: '/solar-home.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Net-zero energy home with recycled materials.',
+        budget: '$8,40,000',
+        timeline: '14 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Eco-Friendly Restaurant',
+        image: '/eco-restaurant.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Zero-waste restaurant with local materials.',
+        budget: '$4,20,000',
+        timeline: '7 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.6
+      },
+      {
+        title: 'Sustainable Apartment Complex',
+        image: '/sustainable-apartment.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Green certified residential complex.',
+        budget: '$12,00,000',
+        timeline: '18 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.5
+      },
+      {
+        title: 'Organic Farm Stay',
+        image: '/organic-farm.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Eco-lodge with natural building materials.',
+        budget: '$5,60,000',
+        timeline: '10 months',
+        location: 'Ooty, Tamil Nadu',
+        rating: 4.4
+      },
+      {
+        title: 'Zero-Waste Office',
+        image: '/zero-waste-office.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Corporate office with circular design principles.',
+        budget: '$3,80,000',
+        timeline: '8 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.7
+      },
+      {
+        title: 'Recycled Materials Store',
+        image: '/recycled-store.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Retail store made from upcycled materials.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Pondicherry, India',
+        rating: 4.6
+      }
+    ]
+  },
+  '14': {
+    id: '14',
+    name: 'Arjun Malhotra',
+    role: 'Interior Designer',
+    experience: '8+ years in modern commercial and workspace design.',
+    avatar: '/arjun-malhotra.jpg',
+    rating: 4.7,
+    projects: [
+      {
+        title: 'Tech Company Campus',
+        image: '/tech-campus.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '500-acre IT park with modern workspaces.',
+        budget: '$85,00,000',
+        timeline: '36 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.8
+      },
+      {
+        title: 'Flexible Office Spaces',
+        image: '/flexible-office.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Hot-desking environment with collaboration zones.',
+        budget: '$12,40,000',
+        timeline: '15 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Innovation Hub',
+        image: '/innovation-hub.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Creative workspace for startups.',
+        budget: '$6,80,000',
+        timeline: '9 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.6
+      },
+      {
+        title: 'Remote Work Center',
+        image: '/remote-work-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Co-working space with high-speed internet.',
+        budget: '$4,20,000',
+        timeline: '6 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.5
+      },
+      {
+        title: 'Executive Boardroom',
+        image: '/executive-boardroom.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'High-tech conference room for C-suite meetings.',
+        budget: '$2,80,000',
+        timeline: '4 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.8
+      },
+      {
+        title: 'Design Studio',
+        image: '/design-studio.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Creative agency workspace with maker space.',
+        budget: '$5,40,000',
+        timeline: '8 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.7
+      },
+      {
+        title: 'Call Center Facility',
+        image: '/call-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '500-seat call center with acoustic design.',
+        budget: '$8,60,000',
+        timeline: '10 months',
+        location: 'Noida, Uttar Pradesh',
+        rating: 4.6
+      }
+    ]
+  },
+  '15': {
+    id: '15',
+    name: 'Kavya Reddy',
+    role: 'Interior Designer',
+    experience: '6+ years specializing in healthcare and educational facility interiors.',
+    avatar: '/kavya-reddy.jpg',
+    rating: 4.4,
+    projects: [
+      {
+        title: 'Children\'s Hospital Ward',
+        image: '/childrens-hospital.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Kid-friendly hospital design with play areas.',
+        budget: '$4,80,000',
+        timeline: '8 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.8
+      },
+      {
+        title: 'Dental Clinic Design',
+        image: '/dental-clinic.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Modern dental office with patient comfort focus.',
+        budget: '$2,20,000',
+        timeline: '5 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.5
+      },
+      {
+        title: 'Medical College Building',
+        image: '/medical-college.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Academic building with lecture halls and labs.',
+        budget: '$18,00,000',
+        timeline: '20 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.7
+      },
+      {
+        title: 'Rehabilitation Center',
+        image: '/rehabilitation-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Therapy-focused healthcare facility.',
+        budget: '$6,40,000',
+        timeline: '10 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Medical Equipment Showroom',
+        image: '/medical-showroom.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Interactive medical device display space.',
+        budget: '$3,20,000',
+        timeline: '6 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.4
+      },
+      {
+        title: 'Research Laboratory',
+        image: '/research-lab.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'BSL-3 lab with specialized equipment.',
+        budget: '$12,00,000',
+        timeline: '14 months',
+        location: 'Delhi, India',
+        rating: 4.5
+      },
+      {
+        title: 'Health Checkup Center',
+        image: '/health-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Preventive healthcare facility design.',
+        budget: '$5,60,000',
+        timeline: '9 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.3
+      }
+    ]
+  },
+  '16': {
+    id: '16',
+    name: 'Deepak Agarwal',
+    role: 'Interior Designer',
+    experience: '10+ years in luxury retail and entertainment venue design.',
+    avatar: '/deepak-agarwal.jpg',
+    rating: 4.8,
+    projects: [
+      {
+        title: 'International Mall Design',
+        image: '/international-mall.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '800,000 sq ft shopping mall with anchor stores.',
+        budget: '$45,00,000',
+        timeline: '28 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.9
+      },
+      {
+        title: 'Cinematic Experience Center',
+        image: '/cinematic-center.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'IMAX theater complex with premium dining.',
+        budget: '$25,00,000',
+        timeline: '18 months',
+        location: 'Delhi, India',
+        rating: 4.8
+      },
+      {
+        title: 'Luxury Brand Flagship Store',
+        image: '/luxury-flagship.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'High-end fashion store with bespoke elements.',
+        budget: '$8,40,000',
+        timeline: '10 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.9
+      },
+      {
+        title: 'Gaming Zone Design',
+        image: '/gaming-zone.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Entertainment complex with VR experiences.',
+        budget: '$12,00,000',
+        timeline: '12 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.7
+      },
+      {
+        title: 'Food Court Renovation',
+        image: '/food-court.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Upscale food court with diverse cuisines.',
+        budget: '$6,80,000',
+        timeline: '8 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Amusement Park Design',
+        image: '/amusement-park.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Family entertainment center with themed areas.',
+        budget: '$35,00,000',
+        timeline: '24 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.8
+      },
+      {
+        title: 'Wine Bar & Lounge',
+        image: '/wine-bar.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Sophisticated bar with climate-controlled storage.',
+        budget: '$4,20,000',
+        timeline: '6 months',
+        location: 'Goa, India',
+        rating: 4.7
+      }
+    ]
+  },
+  '17': {
+    id: '17',
+    name: 'Rhea Kapoor',
+    role: 'Interior Designer',
+    experience: '7+ years in art-inspired interiors and cultural space design.',
+    avatar: '/rhea-kapoor.jpg',
+    rating: 4.5,
+    projects: [
+      {
+        title: 'Contemporary Art Gallery',
+        image: '/art-gallery.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Minimalist gallery with flexible display systems.',
+        budget: '$6,80,000',
+        timeline: '9 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.8
+      },
+      {
+        title: 'Cultural Center Design',
+        image: '/cultural-center.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Multi-purpose venue for performances and exhibitions.',
+        budget: '$18,00,000',
+        timeline: '16 months',
+        location: 'Kolkata, West Bengal',
+        rating: 4.7
+      },
+      {
+        title: 'Music Recording Studio',
+        image: '/music-studio.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Professional recording facility with acoustic design.',
+        budget: '$8,40,000',
+        timeline: '12 months',
+        location: 'Nashik, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Theater Interior Design',
+        image: '/theater-interior.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '500-seat auditorium with modern amenities.',
+        budget: '$15,00,000',
+        timeline: '14 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.9
+      },
+      {
+        title: 'Bookstore Cafe Design',
+        image: '/bookstore-cafe.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Cozy reading space with coffee service.',
+        budget: '$2,80,000',
+        timeline: '5 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.4
+      },
+      {
+        title: 'Film Screening Room',
+        image: '/film-room.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Private cinema with premium seating.',
+        budget: '$5,60,000',
+        timeline: '7 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Cultural Museum Annex',
+        image: '/museum-annex.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Interactive exhibit space with multimedia displays.',
+        budget: '$12,00,000',
+        timeline: '11 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.5
+      }
+    ]
+  },
+  '18': {
+    id: '18',
+    name: 'Manish Chandra',
+    role: 'Interior Designer',
+    experience: '9+ years in industrial and warehouse space optimization.',
+    avatar: '/manish-chandra.jpg',
+    rating: 4.3,
+    projects: [
+      {
+        title: 'Automated Warehouse Design',
+        image: '/automated-warehouse.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '100,000 sq ft distribution center with robotics.',
+        budget: '$28,00,000',
+        timeline: '18 months',
+        location: 'Faridabad, Haryana',
+        rating: 4.6
+      },
+      {
+        title: 'Manufacturing Facility',
+        image: '/manufacturing-facility.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Heavy industry workspace with safety systems.',
+        budget: '$35,00,000',
+        timeline: '24 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.4
+      },
+      {
+        title: 'Cold Storage Facility',
+        image: '/cold-storage.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Temperature-controlled storage with logistics.',
+        budget: '$15,00,000',
+        timeline: '12 months',
+        location: 'Nagpur, Maharashtra',
+        rating: 4.5
+      },
+      {
+        title: 'Data Center Infrastructure',
+        image: '/data-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Server room with redundancy systems.',
+        budget: '$42,00,000',
+        timeline: '20 months',
+        location: 'Noida, Uttar Pradesh',
+        rating: 4.7
+      },
+      {
+        title: 'Logistics Hub Design',
+        image: '/logistics-hub.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Multi-modal transportation facility.',
+        budget: '$52,00,000',
+        timeline: '30 months',
+        location: 'Ludhiana, Punjab',
+        rating: 4.3
+      },
+      {
+        title: 'Quality Control Lab',
+        image: '/qc-lab.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Testing facility for manufacturing standards.',
+        budget: '$6,40,000',
+        timeline: '8 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.2
+      },
+      {
+        title: 'Tool Storage Facility',
+        image: '/tool-storage.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Organized storage for manufacturing equipment.',
+        budget: '$3,80,000',
+        timeline: '6 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.4
+      }
+    ]
+  },
+  '19': {
+    id: '19',
+    name: 'Zara Ali',
+    role: 'Interior Designer',
+    experience: '8+ years specializing in hospitality and guest experience design.',
+    avatar: '/zara-ali.jpg',
+    rating: 4.6,
+    projects: [
+      {
+        title: 'Business Hotel Chain',
+        image: '/business-hotel.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '300-room hotel with conference facilities.',
+        budget: '$22,00,000',
+        timeline: '20 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.7
+      },
+      {
+        title: 'Airport Lounge Design',
+        image: '/airport-lounge.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'International terminal lounge with premium services.',
+        budget: '$8,50,000',
+        timeline: '10 months',
+        location: 'Delhi, India',
+        rating: 4.8
+      },
+      {
+        title: 'Resort Villa Interiors',
+        image: '/resort-villa.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Beachfront villas with outdoor living spaces.',
+        budget: '$18,00,000',
+        timeline: '15 months',
+        location: 'Goa, India',
+        rating: 4.6
+      },
+      {
+        title: 'Conference Center',
+        image: '/conference-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Multi-purpose venue with divisible meeting rooms.',
+        budget: '$12,00,000',
+        timeline: '14 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.5
+      },
+      {
+        title: 'Luxury Train Interior',
+        image: '/luxury-train.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Heritage railway car restoration and design.',
+        budget: '$6,80,000',
+        timeline: '12 months',
+        location: 'Darjeeling, West Bengal',
+        rating: 4.9
+      },
+      {
+        title: 'Guest House Design',
+        image: '/guest-house.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Boutique accommodation with local charm.',
+        budget: '$4,20,000',
+        timeline: '8 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.4
+      },
+      {
+        title: 'Floating Restaurant',
+        image: '/floating-restaurant.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'River cruise restaurant with panoramic views.',
+        budget: '$5,60,000',
+        timeline: '10 months',
+        location: 'Varanasi, Uttar Pradesh',
+        rating: 4.7
+      }
+    ]
+  },
+  '20': {
+    id: '20',
+    name: 'Harsh Patel',
+    role: 'Interior Designer',
+    experience: '11+ years in high-end residential and luxury lifestyle spaces.',
+    avatar: '/harsh-patel.jpg',
+    rating: 4.8,
+    projects: [
+      {
+        title: 'Ultra-Luxury Penthouse',
+        image: '/ultra-penthouse.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: '20,000 sq ft penthouse with panoramic city views.',
+        budget: '$65,00,000',
+        timeline: '28 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.9
+      },
+      {
+        title: 'Private Island Resort',
+        image: '/private-island.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Exclusive resort on private island with 25 villas.',
+        budget: '$85,00,000',
+        timeline: '36 months',
+        location: 'Lakshadweep, India',
+        rating: 4.9
+      },
+      {
+        title: 'Megayacht Interior',
+        image: '/megayacht.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '300-foot luxury yacht with premium amenities.',
+        budget: '$45,00,000',
+        timeline: '18 months',
+        location: 'Mumbai Harbour',
+        rating: 4.8
+      },
+      {
+        title: 'Celebrity Mansion',
+        image: '/celebrity-mansion.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '40,000 sq ft home with home theater and wine cellar.',
+        budget: '$55,00,000',
+        timeline: '32 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.9
+      },
+      {
+        title: 'High-End Showroom',
+        image: '/high-end-showroom.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Luxury automobile dealership with VIP areas.',
+        budget: '$18,00,000',
+        timeline: '15 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.7
+      },
+      {
+        title: 'Executive Estate',
+        image: '/executive-estate.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Rural estate with guest accommodation.',
+        budget: '$38,00,000',
+        timeline: '24 months',
+        location: 'Lonavala, Maharashtra',
+        rating: 4.8
+      },
+      {
+        title: 'Private Jet Cabin',
+        image: '/private-jet.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Custom interior for Boeing Business Jet.',
+        budget: '$12,00,000',
+        timeline: '6 months',
+        location: 'Delhi, India',
+        rating: 4.8
+      }
+    ]
+  },
+  '21': {
+    id: '21',
+    name: 'Ishaan Verma',
+    role: 'Interior Designer',
+    experience: '5+ years in modern minimalist and Scandinavian design principles.',
+    avatar: '/ishaan-verma.jpg',
+    rating: 4.4,
+    projects: [
+      {
+        title: 'Scandinavian Apartment',
+        image: '/scandinavian-apartment.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Nordic-inspired 2BHK with natural light.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Minimalist Office Space',
+        image: '/minimalist-office.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Clean workspace with focus on functionality.',
+        budget: '$4,80,000',
+        timeline: '8 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.3
+      },
+      {
+        title: 'Zen Garden Design',
+        image: '/zen-garden.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Meditation space with water elements.',
+        budget: '$1,80,000',
+        timeline: '4 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.7
+      },
+      {
+        title: 'Monochrome Kitchen',
+        image: '/monochrome-kitchen.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Black and white kitchen with hidden storage.',
+        budget: '$3,20,000',
+        timeline: '6 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.5
+      },
+      {
+        title: 'Open Plan Living',
+        image: '/open-plan.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Seamless living area with natural materials.',
+        budget: '$5,60,000',
+        timeline: '9 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.4
+      },
+      {
+        title: 'Japanese-Inspired Bathroom',
+        image: '/japanese-bathroom.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Spa-like bathroom with natural stone.',
+        budget: '$1,20,000',
+        timeline: '3 months',
+        location: 'Delhi, India',
+        rating: 4.6
+      },
+      {
+        title: 'Cozy Reading Nook',
+        image: '/reading-nook.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Intimate corner with built-in shelving.',
+        budget: '$60,000',
+        timeline: '2 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.2
+      }
+    ]
+  },
+  '22': {
+    id: '22',
+    name: 'Mira Jain',
+    role: 'Interior Designer',
+    experience: '6+ years specializing in vintage and retro-inspired interiors.',
+    avatar: '/mira-jain.jpg',
+    rating: 4.5,
+    projects: [
+      {
+        title: '1920s Art Deco Suite',
+        image: '/art-deco-suite.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Glamorous hotel suite with period details.',
+        budget: '$4,80,000',
+        timeline: '8 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.8
+      },
+      {
+        title: 'Vintage Barber Shop',
+        image: '/vintage-barber.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Classic 1950s barbershop with authentic details.',
+        budget: '$1,80,000',
+        timeline: '4 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Mid-Century Modern Home',
+        image: '/mid-century.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '1950s-inspired family home design.',
+        budget: '$6,40,000',
+        timeline: '10 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.7
+      },
+      {
+        title: 'Retro Diner Design',
+        image: '/retro-diner.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '1950s American diner with chrome accents.',
+        budget: '$2,80,000',
+        timeline: '5 months',
+        location: 'Chandigarh, India',
+        rating: 4.4
+      },
+      {
+        title: 'Vintage Record Store',
+        image: '/record-store.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Nostalgic music store with listening booths.',
+        budget: '$3,20,000',
+        timeline: '6 months',
+        location: 'Kolkata, West Bengal',
+        rating: 4.5
+      },
+      {
+        title: 'Classic Cinema Hall',
+        image: '/classic-cinema.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Restored 1940s movie theater.',
+        budget: '$12,00,000',
+        timeline: '14 months',
+        location: 'Madurai, Tamil Nadu',
+        rating: 4.9
+      },
+      {
+        title: 'Vintage Antique Shop',
+        image: '/antique-shop.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Curated vintage furniture showroom.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.3
+      }
+    ]
+  },
+  '23': {
+    id: '23',
+    name: 'Aditya Singh',
+    role: 'Interior Designer',
+    experience: '12+ years in large-scale institutional and government building design.',
+    avatar: '/aditya-singh.jpg',
+    rating: 4.7,
+    projects: [
+      {
+        title: 'Parliament Annex Building',
+        image: '/parliament-annex.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Government building with security and accessibility features.',
+        budget: '$85,00,000',
+        timeline: '42 months',
+        location: 'Delhi, India',
+        rating: 4.8
+      },
+      {
+        title: 'Supreme Court Chambers',
+        image: '/supreme-court.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Judicial chambers with traditional and modern elements.',
+        budget: '$25,00,000',
+        timeline: '24 months',
+        location: 'Delhi, India',
+        rating: 4.9
+      },
+      {
+        title: 'University Campus Masterplan',
+        image: '/university-masterplan.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: '5-building academic campus design.',
+        budget: '$120,00,000',
+        timeline: '48 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.7
+      },
+      {
+        title: 'Municipal Building',
+        image: '/municipal-building.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'City hall with public service areas.',
+        budget: '$35,00,000',
+        timeline: '28 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.6
+      },
+      {
+        title: 'Research Institute',
+        image: '/research-institute.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Scientific research facility with specialized labs.',
+        budget: '$65,00,000',
+        timeline: '36 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.8
+      },
+      {
+        title: 'Diplomatic Mission',
+        image: '/diplomatic-mission.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'International embassy with cultural elements.',
+        budget: '$45,00,000',
+        timeline: '32 months',
+        location: 'New Delhi, India',
+        rating: 4.9
+      },
+      {
+        title: 'Public Library System',
+        image: '/public-library.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Central library with digital and traditional spaces.',
+        budget: '$28,00,000',
+        timeline: '20 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.5
+      }
+    ]
+  },
+  '24': {
+    id: '24',
+    name: 'Neha Kapoor',
+    role: 'Interior Designer',
+    experience: '4+ years in creative studio spaces and maker environment design.',
+    avatar: '/neha-kapoor.jpg',
+    rating: 4.3,
+    projects: [
+      {
+        title: 'Co-maker Space',
+        image: '/co-maker-space.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Collaborative workspace with tools and equipment.',
+        budget: '$3,80,000',
+        timeline: '6 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.5
+      },
+      {
+        title: 'Artisan Workshop',
+        image: '/artisan-workshop.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Craft studio with natural lighting and storage.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.4
+      },
+      {
+        title: 'Photography Studio',
+        image: '/photo-studio.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Professional studio with lighting control.',
+        budget: '$4,20,000',
+        timeline: '7 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Pottery Studio Design',
+        image: '/pottery-studio.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Ceramic arts studio with kilns and work areas.',
+        budget: '$2,80,000',
+        timeline: '6 months',
+        location: 'Kolkata, West Bengal',
+        rating: 4.3
+      },
+      {
+        title: 'Woodworking Shop',
+        image: '/woodworking-shop.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Furniture workshop with dust collection system.',
+        budget: '$5,60,000',
+        timeline: '8 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.2
+      },
+      {
+        title: 'Digital Media Lab',
+        image: '/digital-lab.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Editing suite with high-end equipment.',
+        budget: '$6,80,000',
+        timeline: '9 months',
+        location: 'Hyderabad, Telangana',
+        rating: 4.7
+      },
+      {
+        title: 'Silk Weaving Center',
+        image: '/silk-center.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Traditional weaving space with modern equipment.',
+        budget: '$3,20,000',
+        timeline: '7 months',
+        location: 'Varanasi, Uttar Pradesh',
+        rating: 4.4
+      }
+    ]
+  },
+  '25': {
+    id: '25',
+    name: 'Yash Gupta',
+    role: 'Interior Designer',
+    experience: '9+ years specializing in sports facilities and recreational spaces.',
+    avatar: '/yash-gupta.jpg',
+    rating: 4.6,
+    projects: [
+      {
+        title: 'Multi-Sport Complex',
+        image: '/multi-sport.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Indoor stadium with multiple courts and facilities.',
+        budget: '$45,00,000',
+        timeline: '30 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.8
+      },
+      {
+        title: 'Swimming Center',
+        image: '/swimming-center.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Olympic-standard pool with spectator seating.',
+        budget: '$35,00,000',
+        timeline: '24 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Golf Clubhouse',
+        image: '/golf-clubhouse.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Luxury clubhouse with pro shop and dining.',
+        budget: '$22,00,000',
+        timeline: '16 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.6
+      },
+      {
+        title: 'Fitness Center Chain',
+        image: '/fitness-chain.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Modern gym with equipment and group studios.',
+        budget: '$18,00,000',
+        timeline: '18 months',
+        location: 'Multiple Cities',
+        rating: 4.5
+      },
+      {
+        title: 'Rock Climbing Gym',
+        image: '/climbing-gym.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Indoor climbing wall with safety features.',
+        budget: '$8,40,000',
+        timeline: '10 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.4
+      },
+      {
+        title: 'Tennis Academy',
+        image: '/tennis-academy.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Professional tennis facility with courts.',
+        budget: '$28,00,000',
+        timeline: '20 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.7
+      },
+      {
+        title: 'Martial Arts Dojo',
+        image: '/martial-arts.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Traditional dojo with modern amenities.',
+        budget: '$4,80,000',
+        timeline: '8 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.3
+      }
+    ]
+  },
+  '26': {
+    id: '26',
+    name: 'Tanya Sharma',
+    role: 'Interior Designer',
+    experience: '7+ years in specialty retail and boutique store design.',
+    avatar: '/tanya-sharma.jpg',
+    rating: 4.4,
+    projects: [
+      {
+        title: 'Jewelry Boutique',
+        image: '/jewelry-boutique.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Luxury jewelry store with display cases.',
+        budget: '$3,80,000',
+        timeline: '6 months',
+        location: 'Delhi, India',
+        rating: 4.8
+      },
+      {
+        title: 'Fashion Pop-up Store',
+        image: '/fashion-popup.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Temporary retail space with modular displays.',
+        budget: '$1,20,000',
+        timeline: '3 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.2
+      },
+      {
+        title: 'Organic Grocery Store',
+        image: '/organic-grocery.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Sustainable market with fresh produce displays.',
+        budget: '$2,60,000',
+        timeline: '5 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.6
+      },
+      {
+        title: 'Bookstore Renovation',
+        image: '/bookstore-renov.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Independent bookstore with reading areas.',
+        budget: '$1,80,000',
+        timeline: '4 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.5
+      },
+      {
+        title: 'Floral Design Shop',
+        image: '/floral-shop.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Flower shop with cold storage and workshop.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Jaipur, Rajasthan',
+        rating: 4.3
+      },
+      {
+        title: 'Electronics Store',
+        image: '/electronics-store.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Modern tech store with interactive displays.',
+        budget: '$6,80,000',
+        timeline: '8 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.4
+      },
+      {
+        title: 'Art Supply Store',
+        image: '/art-supply.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Creative supply shop with workshop space.',
+        budget: '$2,80,000',
+        timeline: '6 months',
+        location: 'Kolkata, West Bengal',
+        rating: 4.1
+      }
+    ]
+  },
+  '27': {
+    id: '27',
+    name: 'Raghav Mehta',
+    role: 'Interior Designer',
+    experience: '10+ years in budget-friendly and cost-effective design solutions.',
+    avatar: '/raghav-mehta.jpg',
+    rating: 4.2,
+    projects: [
+      {
+        title: 'Affordable Housing Complex',
+        image: '/affordable-housing.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Cost-effective homes for 200 families.',
+        budget: '$12,00,000',
+        timeline: '18 months',
+        location: 'Noida, Uttar Pradesh',
+        rating: 4.3
+      },
+      {
+        title: 'Budget Hotel Chain',
+        image: '/budget-hotel.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Clean, comfortable rooms for budget travelers.',
+        budget: '$8,50,000',
+        timeline: '12 months',
+        location: 'Multiple Cities',
+        rating: 4.1
+      },
+      {
+        title: 'Student Housing',
+        image: '/student-housing.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Shared accommodation for college students.',
+        budget: '$6,40,000',
+        timeline: '10 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.4
+      },
+      {
+        title: 'Community Center',
+        image: '/community-center-2.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Affordable recreational space for locals.',
+        budget: '$3,80,000',
+        timeline: '8 months',
+        location: 'Ahmedabad, Gujarat',
+        rating: 4.2
+      },
+      {
+        title: 'Small Business Office',
+        image: '/small-office.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Workspace for startups with limited budget.',
+        budget: '$1,80,000',
+        timeline: '4 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.0
+      },
+      {
+        title: 'Economy Restaurant',
+        image: '/economy-restaurant.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Casual dining with efficient layout.',
+        budget: '$2,40,000',
+        timeline: '5 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.1
+      },
+      {
+        title: 'Shared Workspace',
+        image: '/shared-workspace.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Budget-friendly co-working space.',
+        budget: '$2,80,000',
+        timeline: '6 months',
+        location: 'Mysore, Karnataka',
+        rating: 4.2
+      }
+    ]
+  },
+  '28': {
+    id: '28',
+    name: 'Simran Kaur',
+    role: 'Interior Designer',
+    experience: '5+ years specializing in pet-friendly and animal-friendly spaces.',
+    avatar: '/simran-kaur.jpg',
+    rating: 4.5,
+    projects: [
+      {
+        title: 'Veterinary Clinic',
+        image: '/vet-clinic.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Modern animal hospital with separate areas.',
+        budget: '$8,40,000',
+        timeline: '10 months',
+        location: 'Mumbai, Maharashtra',
+        rating: 4.7
+      },
+      {
+        title: 'Pet Grooming Center',
+        image: '/pet-grooming.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Professional grooming facility with safety features.',
+        budget: '$3,20,000',
+        timeline: '6 months',
+        location: 'Pune, Maharashtra',
+        rating: 4.4
+      },
+      {
+        title: 'Animal Shelter Design',
+        image: '/animal-shelter.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Humane shelter with adoption center.',
+        budget: '$6,80,000',
+        timeline: '12 months',
+        location: 'Delhi, India',
+        rating: 4.6
+      },
+      {
+        title: 'Pet-Friendly Cafe',
+        image: '/pet-cafe.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Restaurant where pets are welcome.',
+        budget: '$4,20,000',
+        timeline: '7 months',
+        location: 'Bangalore, Karnataka',
+        rating: 4.3
+      },
+      {
+        title: 'Dog Training Facility',
+        image: '/dog-training.jpg',
+        status: 'In Progress',
+        color: '#f2994a',
+        description: 'Indoor/outdoor training space with equipment.',
+        budget: '$2,80,000',
+        timeline: '5 months',
+        location: 'Gurgaon, Haryana',
+        rating: 4.2
+      },
+      {
+        title: 'Pet Boarding Center',
+        image: '/pet-boarding.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Overnight care facility with play areas.',
+        budget: '$5,60,000',
+        timeline: '9 months',
+        location: 'Chennai, Tamil Nadu',
+        rating: 4.8
+      },
+      {
+        title: 'Equine Facility',
+        image: '/equine-facility.jpg',
+        status: 'Completed',
+        color: '#2ecc71',
+        description: 'Horse stable and training arena.',
+        budget: '$12,00,000',
+        timeline: '14 months',
+        location: 'Punjab, India',
+        rating: 4.5
+      }
+    ]
   }
 };
 
@@ -821,6 +2563,9 @@ function ProjectComparison() {
         <HeroContent>
           <h1>Professional Comparison</h1>
           <p>Compare professionals side-by-side to make informed decisions for your project</p>
+          <StatsInfo>
+            📊 Now with {Object.keys(allProfiles).length} professionals including 20+ Interior Designers for comprehensive comparisons
+          </StatsInfo>
         </HeroContent>
       </HeroSection>
 
@@ -1032,6 +2777,10 @@ function ProjectComparison() {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <h3>Select Professional {activeSelector}</h3>
+              <p style={{fontSize: '14px', color: '#666', margin: '4px 0 0 0'}}>
+                Choose from {filteredProfiles.length} available professionals
+                {filterRole !== 'All' && ` in ${filterRole} category`}
+              </p>
               <CloseButton onClick={() => setShowProfSelector(false)}>×</CloseButton>
             </ModalHeader>
             
@@ -1059,6 +2808,7 @@ function ProjectComparison() {
                     <Name>{prof.name}</Name>
                     <Role>{prof.role}</Role>
                     <Rating>⭐ {prof.rating} • {prof.projects.length} projects</Rating>
+                    <Experience>{prof.experience}</Experience>
                   </ProfessionalDetails>
                   <SelectButton>Select</SelectButton>
                 </ProfessionalCard>
@@ -1124,7 +2874,19 @@ const HeroContent = styled.div`
   p {
     color: #666;
     font-size: 1rem;
+    margin-bottom: 8px;
   }
+`;
+
+const StatsInfo = styled.div`
+  font-size: 14px;
+  color: #007bff;
+  font-weight: 500;
+  background: rgba(0, 123, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 8px;
 `;
 
 const BackButton = styled.button`
@@ -1560,7 +3322,7 @@ const ModalContent = styled.div`
   background: white;
   border-radius: 20px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 80vh;
   overflow: hidden;
   display: flex;
@@ -1572,7 +3334,7 @@ const ModalHeader = styled.div`
   border-bottom: 1px solid #f0f0f0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 
   h3 {
     margin: 0;
@@ -1682,6 +3444,13 @@ const Role = styled.div`
 const Rating = styled.div`
   font-size: 12px;
   color: #f39c12;
+  margin-bottom: 4px;
+`;
+
+const Experience = styled.div`
+  font-size: 12px;
+  color: #888;
+  line-height: 1.3;
 `;
 
 const SelectButton = styled.button`
