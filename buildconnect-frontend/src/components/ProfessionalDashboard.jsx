@@ -7,11 +7,11 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, limi
 
 // ✅ IMAGES
 const avatar1 = "/11.png";
-const service1 = "/service-interior.jpg";
-const service2 = "/service-foundation.jpg";
+const service1 = "/interior.jpg";
+const service2 = "/foundation.jpg";
 const service3 = "/service-renovation.jpg";
-const project1 = "/project-livingroom.jpg";
-const project2 = "/project-bathroom.jpg";
+const project1 = "/shopping mall construction.png";
+const project2 = "/water management system.png";
 
 // 🚀 CACHE MANAGER
 const CacheManager = {

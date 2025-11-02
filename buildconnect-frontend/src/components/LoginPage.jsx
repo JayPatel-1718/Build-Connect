@@ -1,11 +1,13 @@
+// src/components/LoginPage.jsx
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FaGoogle } from 'react-icons/fa';  
+import { FaGoogle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { 
-  signInWithEmailAndPassword, 
-  signInWithPopup, 
-  GoogleAuthProvider 
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -15,74 +17,87 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Optional: Listen for auth state change (good practice)
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User already signed in → redirect
+        navigate('/dashboard');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Optional: Save user to Firestore
+      // Save user to Firestore (optional)
       const userDoc = doc(db, 'users', user.uid);
       await setDoc(userDoc, {
         email: user.email,
-        createdAt: new Date(),
+        displayName: user.displayName || '',
+        photoURL: user.photoURL || '',
+        createdAt: new Date().toISOString(),
       }, { merge: true });
 
-      navigate('/onboarding');
-    } catch (error) {
-      console.error('Login error:', error);
-      let errorMessage = 'Login failed. ';
-      
-      if (error.code === 'auth/user-not-found') {
-        errorMessage = 'No account found with this email. Please sign up first.';
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = 'Incorrect password. Please try again.';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email format.';
+      console.log('✅ Logged in as:', user.email);
+      navigate('/dashboard'); // 👈 Redirect after successful login
+
+    } catch (err) {
+      console.error('❌ Login failed:', err.message);
+      let msg = 'Login failed. ';
+      if (err.code === 'auth/user-not-found') {
+        msg = 'No account found with this email. Please sign up first.';
+      } else if (err.code === 'auth/wrong-password') {
+        msg = 'Incorrect password. Please try again.';
+      } else if (err.code === 'auth/invalid-email') {
+        msg = 'Invalid email format.';
+      } else {
+        msg += err.message;
       }
-      
-      alert(errorMessage + '\nError: ' + error.message);
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  setLoading(true);
+    setLoading(true);
+    setError('');
 
-  try {
-    console.log('Google sign-in starting...');
-    const result = await signInWithPopup(auth, provider);
-    console.log('Google sign-in successful:', result.user.uid);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-    // Skip Firestore save temporarily to test navigation
-    console.log('Skipping Firestore save for now...');
-    
-    console.log('Navigating to /onboarding...');
-    navigate('/onboarding');
-    console.log('Navigation completed!');
-    
-  } catch (error) {
-    console.error('Google login error:', error);
-    alert('Google login failed: ' + error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      // Save Google user to Firestore
+      const userDoc = doc(db, 'users', user.uid);
+      await setDoc(userDoc, {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || '',
+        photoURL: user.photoURL || '',
+        provider: 'google',
+        createdAt: new Date().toISOString(),
+      }, { merge: true });
 
-  const saveUserToFirestore = async (user) => {
-    const userDoc = doc(db, 'users', user.uid);
-    await setDoc(userDoc, {
-      uid: user.uid,
-      email: user.email,
-      name: user.displayName || '',
-      photoURL: user.photoURL || '',
-      createdAt: new Date(),
-    }, { merge: true });
+      console.log('✅ Google login successful:', user.email);
+      navigate('/dashboard'); // 👈 Redirect after Google login
+
+    } catch (err) {
+      console.error('❌ Google login failed:', err.message);
+      setError('Google login failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,6 +120,8 @@ const LoginPage = () => {
           or start finding work by making your portfolio strong.
         </Subtitle>
 
+        {error && <ErrorBox>{error}</ErrorBox>}
+
         <Form onSubmit={handleLogin}>
           <Label>Email :</Label>
           <InputWrapper>
@@ -114,6 +131,7 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="someone@example.com"
               required
+              disabled={loading}
             />
           </InputWrapper>
 
@@ -125,6 +143,7 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              disabled={loading}
             />
           </InputWrapper>
 
@@ -156,7 +175,7 @@ const LoginPage = () => {
   );
 };
 
-// --- STYLED COMPONENTS (Keep your existing ones) ---
+// --- STYLED COMPONENTS ---
 const Container = styled.div`
   display: flex;
   justify-content: center;
@@ -240,6 +259,8 @@ const EmailInput = styled.input`
   font-size: 14px;
   outline: none;
   font-family: 'Poppins', sans-serif;
+  background: ${props => props.disabled ? '#f5f5f5' : 'white'};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'auto'};
 
   &:focus {
     border-color: #007bff;
@@ -267,9 +288,24 @@ const SubmitButton = styled.button`
     background: #333;
   }
 
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   svg {
     margin-left: 8px;
   }
+`;
+
+const ErrorBox = styled.div`
+  background: #ffecec;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  text-align: center;
 `;
 
 const Divider = styled.div`
