@@ -33,7 +33,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
-        image: '/vib.jpg',
+        image: '/vib.png',
         status: 'Currently Working',
         color: '#e74c3c',
         description: 'Modern office design with sustainable materials and open workspaces.',
