@@ -33,7 +33,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Vibrant Office Space (Bangalore)',
-        image: '/office space.jpg',
+        image: '/vib.jpg',
         status: 'Currently Working',
         color: '#e74c3c',
         description: 'Modern office design with sustainable materials and open workspaces.',
@@ -44,7 +44,7 @@ const mockProfiles = {
       },
       {
         title: 'Luxury Villa Renovation (Pune)',
-        image: '/office 2.png',
+        image: '/luxufry.png',
         status: 'Completed In 1 Years',
         color: '#2ecc71',
         description: 'Complete renovation of 3BHK villa with modern amenities.',
@@ -55,7 +55,7 @@ const mockProfiles = {
       },
       {
         title: 'Modern Apartment Design',
-        image: '/OIP.png',
+        image: '/modern.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '2BHK apartment with smart home integration.',
@@ -66,7 +66,7 @@ const mockProfiles = {
       },
       {
         title: 'Corporate Office Hub',
-        image: '/Corporate Office Hub.png',
+        image: '/hub.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '20,000 sq ft corporate office space.',
@@ -77,7 +77,7 @@ const mockProfiles = {
       },
       {
         title: 'Minimalist Studio Apartment',
-        image: '/image-2.png',
+        image: '/minimalist.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Compact 400 sq ft studio with multi-functional furniture.',
@@ -88,7 +88,7 @@ const mockProfiles = {
       },
       {
         title: 'Restaurant Interior Design',
-        image: '/image.png',
+        image: '/restauran.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Contemporary restaurant with industrial-chic elements.',
@@ -99,7 +99,7 @@ const mockProfiles = {
       },
       {
         title: 'Retail Storefront Revamp',
-        image: '/image-1.png',
+        image: '/rewamp.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Fashion boutique with custom lighting and display units.',
@@ -174,7 +174,7 @@ const mockProfiles = {
       },
       {
         title: 'EV Charging Station Network',
-        image: '/image-1.png',
+        image: '/ev charging station network.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Installation of 50 EV charging points across city.',
@@ -185,7 +185,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital Electrical Infrastructure',
-        image: '/image-2.png',
+        image: '/hospital electrical infrastructure.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Specialized electrical system for 500-bed hospital.',
@@ -205,7 +205,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'High-Rise Residential Complex',
-        image: '/image-2.png',
+        image: '/high rise residential complex.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Structural design for 35-story residential building.',
@@ -216,7 +216,7 @@ const mockProfiles = {
       },
       {
         title: 'Bridge Construction Project',
-        image: '/image.png',
+        image: '/bridge construction project.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '600m cable-stayed bridge design.',
@@ -227,7 +227,7 @@ const mockProfiles = {
       },
       {
         title: 'Metro Station Structural Design',
-        image: '/image-1.png',
+        image: '/metro station structural design.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Underground metro station with seismic resistance.',
@@ -238,7 +238,7 @@ const mockProfiles = {
       },
       {
         title: 'Dam Rehabilitation Project',
-        image: '/image-2.png',
+        image: '/dam rehabilitation project.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Strengthening of 50-year-old concrete gravity dam.',
@@ -249,7 +249,7 @@ const mockProfiles = {
       },
       {
         title: 'Airport Terminal Expansion',
-        image: '/image.png',
+        image: '/airport terminal expansion.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Structural additions to international airport terminal.',
@@ -260,7 +260,7 @@ const mockProfiles = {
       },
       {
         title: 'Tunnel Boring Machine Shaft',
-        image: '/image-1.png',
+        image: '/tunnel boring machine shaft.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Deep excavation for underground metro tunnel.',
@@ -271,7 +271,7 @@ const mockProfiles = {
       },
       {
         title: 'Seismic Retrofitting Project',
-        image: '/image-2.png',
+        image: '/seismic retrofitting project.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Retrofitting of 20 historical buildings for earthquake safety.',
@@ -291,7 +291,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Modern Villa Design',
-        image: '/image-1.png',
+        image: '/modernvilla.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Custom luxury villa with sustainable architecture.',
@@ -302,7 +302,7 @@ const mockProfiles = {
       },
       {
         title: 'Heritage Restoration',
-        image: '/image-2.png',
+        image: '/heritage.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Restoration of 200-year-old heritage building.',
@@ -313,7 +313,7 @@ const mockProfiles = {
       },
       {
         title: 'Eco-Friendly Resort',
-        image: '/image.png',
+        image: '/resort.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Sustainable resort with solar integration.',
@@ -324,7 +324,7 @@ const mockProfiles = {
       },
       {
         title: 'Mixed-Use Development',
-        image: '/image-1.png',
+        image: '/mixed.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '15-story building with retail, offices, and apartments.',
@@ -335,7 +335,7 @@ const mockProfiles = {
       },
       {
         title: 'School Campus Design',
-        image: '/image-2.png',
+        image: '/schoolcampus.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Green campus for international school with 2,000 students.',
@@ -346,7 +346,7 @@ const mockProfiles = {
       },
       {
         title: 'Urban Housing Complex',
-        image: '/image.png',
+        image: '/urban.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Affordable housing for 500 families with community spaces.',
@@ -357,7 +357,7 @@ const mockProfiles = {
       },
       {
         title: 'Museum Architecture',
-        image: '/image-1.png',
+        image: '/museum.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Contemporary art museum with climate-controlled galleries.',
@@ -377,7 +377,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Water Management System',
-        image: '/image-1.png',
+        image: '/water management system.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Complete water management for 500-unit residential complex.',
@@ -388,7 +388,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Wastewater Treatment',
-        image: '/image-2.png',
+        image: '/industrial wastewater treatment.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Treatment plant for textile manufacturing facility.',
@@ -399,7 +399,7 @@ const mockProfiles = {
       },
       {
         title: 'Rainwater Harvesting System',
-        image: '/image.png',
+        image: '/rainwater harvesting system.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Collection and storage system for 10-acre campus.',
@@ -410,7 +410,7 @@ const mockProfiles = {
       },
       {
         title: 'Swimming Pool Plumbing',
-        image: '/image-1.png',
+        image: '/swimming pool plumbing.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Heated pool with filtration and chemical dosing system.',
@@ -421,7 +421,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital Sanitation System',
-        image: '/image-2.png',
+        image: '/hospital sanitaion system.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Specialized plumbing for infection control in medical facility.',
@@ -432,7 +432,7 @@ const mockProfiles = {
       },
       {
         title: 'Commercial Kitchen Plumbing',
-        image: '/image.png',
+        image: '/commercial kitchen plumbing.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'High-volume kitchen with grease traps and waste disposal.',
@@ -443,7 +443,7 @@ const mockProfiles = {
       },
       {
         title: 'Greywater Recycling Plant',
-        image: '/image-1.png',
+        image: '/greywater recycling plant.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'System to reuse washing machine and shower water.',
@@ -463,7 +463,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Shopping Mall Construction',
-        image: '/image-2.png',
+        image: '/shopping mall construction.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '300,000 sq ft shopping mall with parking.',
@@ -474,7 +474,7 @@ const mockProfiles = {
       },
       {
         title: 'Residential Township',
-        image: '/image.png',
+        image: '/residential township.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '5,000-unit gated community with amenities.',
@@ -485,7 +485,7 @@ const mockProfiles = {
       },
       {
         title: 'Hotel & Spa Complex',
-        image: '/image-1.png',
+        image: '/hotel and spa complex.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '5-star hotel with wellness center and conference facilities.',
@@ -496,7 +496,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Warehouse',
-        image: '/image-2.png',
+        image: '/industrial warehouse.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Automated warehouse with 200,000 sq ft storage.',
@@ -507,7 +507,7 @@ const mockProfiles = {
       },
       {
         title: 'Sports Stadium Construction',
-        image: '/image.png',
+        image: '/sports stadium construction.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '60,000-seater stadium with retractable roof.',
@@ -518,7 +518,7 @@ const mockProfiles = {
       },
       {
         title: 'Educational Institution',
-        image: '/image-1.png',
+        image: '/educational institution.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'University campus with 15 buildings and student housing.',
@@ -529,7 +529,7 @@ const mockProfiles = {
       },
       {
         title: 'Mixed-Use Skyscraper',
-        image: '/image-2.png',
+        image: '/mixed use skyscraper.png',
         status: 'In Progress',
         color: '#f2994a',
         description: '75-story tower with offices, residences, and retail.',
@@ -549,7 +549,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Urban Park Design',
-        image: '/image.png',
+        image: '/m1.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '25-acre urban park with sustainable features.',
@@ -560,7 +560,7 @@ const mockProfiles = {
       },
       {
         title: 'Corporate Campus Landscaping',
-        image: '/image-1.png',
+        image: '/m2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Green spaces for tech company headquarters.',
@@ -571,7 +571,7 @@ const mockProfiles = {
       },
       {
         title: 'Residential Garden Design',
-        image: '/image-2.png',
+        image: '/m3.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Private rooftop garden with water features.',
@@ -582,7 +582,7 @@ const mockProfiles = {
       },
       {
         title: 'Botanical Garden Masterplan',
-        image: '/image.png',
+        image: '/m4.png',
         status: 'Completed',
         color: '#2ecc71',
         description: '200-acre botanical garden with themed sections.',
@@ -593,7 +593,7 @@ const mockProfiles = {
       },
       {
         title: 'Green Roof Installation',
-        image: '/image-1.png',
+        image: '/m5.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Vegetated roof system for commercial building.',
@@ -604,7 +604,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital Healing Garden',
-        image: '/image-2.png',
+        image: '/m6.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Therapeutic outdoor space for patient recovery.',
@@ -615,7 +615,7 @@ const mockProfiles = {
       },
       {
         title: 'Public Plaza Revitalization',
-        image: '/image.png',
+        image: '/m7.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Renovation of historic city square with native plants.',
@@ -635,7 +635,7 @@ const mockProfiles = {
     projects: [
       {
         title: 'Smart HVAC Installation',
-        image: '/image-1.png',
+        image: '/a1.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Energy-efficient HVAC for corporate office.',
@@ -646,7 +646,7 @@ const mockProfiles = {
       },
       {
         title: 'Data Center Cooling System',
-        image: '/image-2.png',
+        image: '/a2.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Precision cooling for Tier-4 data center.',
@@ -657,7 +657,7 @@ const mockProfiles = {
       },
       {
         title: 'Hospital HVAC System',
-        image: '/image.png',
+        image: '/a3.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Specialized ventilation for operating theaters.',
@@ -668,7 +668,7 @@ const mockProfiles = {
       },
       {
         title: 'Industrial Process Cooling',
-        image: '/image-1.png',
+        image: '/a4.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Chilled water system for pharmaceutical manufacturing.',
@@ -679,7 +679,7 @@ const mockProfiles = {
       },
       {
         title: 'Residential Geothermal System',
-        image: '/image-2.png',
+        image: '/a5.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Ground-source heat pump for luxury villa.',
@@ -690,7 +690,7 @@ const mockProfiles = {
       },
       {
         title: 'Airport Terminal HVAC',
-        image: '/image.png',
+        image: '/a6.png',
         status: 'In Progress',
         color: '#f2994a',
         description: 'Central air conditioning for international terminal.',
@@ -701,7 +701,7 @@ const mockProfiles = {
       },
       {
         title: 'Cold Storage Facility',
-        image: '/image-1.png',
+        image: '/a7.png',
         status: 'Completed',
         color: '#2ecc71',
         description: 'Temperature-controlled warehouse for food products.',
